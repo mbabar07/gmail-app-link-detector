@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#08040f">
+  <meta name="description" content="MailScope helps you review Google-linked apps and scan Gmail inbox categories from a private Chrome side panel.">
+  <title>MailScope | Gmail App &amp; Link Detector</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #f7f2fb;
+      --muted: #b6aabf;
+      --quiet: #85788f;
+      --night: #08040f;
+      --plum: #1e0a4b;
+      --magenta: #d82299;
+      --mint: #69dfcf;
+      --line: rgba(237, 203, 237, .15);
+      --ease: cubic-bezier(.16, 1, .3, 1);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--night); }
+    body {
+      min-width: 320px;
+      margin: 0;
+      color: var(--ink);
+      background: var(--night);
+      font-family: "Space Grotesk", "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    .site-shell { overflow: hidden; }
+    .topbar {
+      position: relative;
+      z-index: 4;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: min(1180px, calc(100% - 56px));
+      height: 82px;
+      margin: 0 auto;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand { display: flex; align-items: center; gap: 11px; text-decoration: none; }
+    .brand img { width: 37px; height: 37px; object-fit: contain; }
+    .brand-name { display: grid; gap: 1px; }
+    .brand-name strong { font-size: 15px; font-weight: 650; }
+    .brand-name span { color: var(--muted); font-size: 9px; }
+    .top-actions { display: flex; align-items: center; gap: 21px; }
+    .top-link { color: var(--muted); font-size: 11px; text-decoration: none; transition: color .35s var(--ease); }
+    .top-link:hover { color: var(--ink); }
+    .top-download {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 10px 14px;
+      border: 1px solid rgba(238, 174, 223, .26);
+      border-radius: 8px;
+      color: #fff;
+      background: rgba(216, 34, 153, .13);
+      font-size: 10px;
+      font-weight: 650;
+      text-decoration: none;
+      transition: border-color .4s var(--ease), background .4s var(--ease), box-shadow .4s var(--ease);
+    }
+    .top-download:hover { border-color: var(--magenta); background: rgba(216, 34, 153, .24); box-shadow: 0 0 20px rgba(216, 34, 153, .16); }
+
+    .hero {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, .88fr) minmax(390px, 1.12fr);
+      align-items: center;
+      gap: clamp(40px, 8vw, 112px);
+      width: min(1180px, calc(100% - 56px));
+      min-height: 685px;
+      margin: 0 auto;
+      padding: 60px 0 74px;
+    }
+    .hero::before {
+      position: absolute;
+      z-index: -1;
+      top: 7%;
+      right: -23%;
+      width: 78%;
+      height: 95%;
+      content: "";
+      background: radial-gradient(ellipse at 62% 44%, rgba(216, 34, 153, .18), rgba(30, 10, 75, .3) 38%, transparent 72%);
+      filter: blur(18px);
+      pointer-events: none;
+    }
+    .hero-copy { position: relative; z-index: 1; max-width: 510px; padding: 8px 0 25px; }
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      color: #f08cca;
+      font-family: "DM Mono", monospace;
+      font-size: 9px;
+      letter-spacing: 1.1px;
+      text-transform: uppercase;
+    }
+    .kicker::before { width: 21px; height: 1px; content: ""; background: var(--magenta); box-shadow: 0 0 9px var(--magenta); }
+    h1 {
+      max-width: 530px;
+      margin: 24px 0 17px;
+      font-size: clamp(43px, 5.6vw, 70px);
+      font-weight: 500;
+      line-height: 1.02;
+    }
+    h1 span {
+      color: transparent;
+      background: linear-gradient(100deg, #f27dc6 0%, #d82299 42%, #9b72d9 100%);
+      background-clip: text;
+      -webkit-background-clip: text;
+    }
+    .hero-copy > p { max-width: 405px; margin: 0; color: var(--muted); font-size: 14px; line-height: 1.75; }
+    .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 29px; }
+    .download-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      min-height: 48px;
+      padding: 0 18px;
+      border: 1px solid rgba(255, 229, 246, .24);
+      border-radius: 9px;
+      color: #fff;
+      background: linear-gradient(112deg, #d82299, #7221a0 75%, #4c217f);
+      box-shadow: 0 10px 34px rgba(216, 34, 153, .2), inset 0 1px rgba(255,255,255,.18);
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: transform .45s var(--ease), box-shadow .45s var(--ease), filter .45s var(--ease);
+    }
+    .download-button:hover { transform: translateY(-2px); filter: brightness(1.08); box-shadow: 0 14px 38px rgba(216, 34, 153, .3), inset 0 1px rgba(255,255,255,.22); }
+    .download-button .arrow { color: #ffd6f0; font-size: 15px; }
+    .download-note { display: flex; align-items: center; gap: 7px; margin-top: 13px; color: var(--quiet); font-family: "DM Mono", monospace; font-size: 9px; }
+    .download-note::before { width: 5px; height: 5px; border-radius: 50%; content: ""; background: var(--mint); box-shadow: 0 0 10px rgba(105,223,207,.7); }
+    .hero-meta { display: flex; flex-wrap: wrap; gap: 21px; margin-top: 34px; padding-top: 19px; border-top: 1px solid var(--line); }
+    .hero-meta div { display: grid; gap: 4px; }
+    .hero-meta strong { font-size: 12px; font-weight: 600; }
+    .hero-meta span { color: var(--quiet); font-family: "DM Mono", monospace; font-size: 8px; text-transform: uppercase; }
+
+    .preview-wrap { position: relative; justify-self: end; width: min(100%, 470px); padding: 0 0 0 10px; }
+    .preview-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 0 0 11px 4px;
+      color: #d7c6dc;
+      font-family: "DM Mono", monospace;
+      font-size: 8px;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+    }
+    .preview-label span:last-child { display: inline-flex; align-items: center; gap: 6px; color: #9b8ba2; letter-spacing: 0; text-transform: none; }
+    .preview-label span:last-child::before { width: 5px; height: 5px; content: ""; border-radius: 50%; background: var(--mint); }
+    .preview-frame {
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      height: 593px;
+      border: 1px solid rgba(221, 128, 199, .29);
+      border-radius: 13px;
+      background: #08040f;
+      box-shadow: 0 35px 100px rgba(0,0,0,.55), 0 0 48px rgba(123, 18, 135, .17), inset 0 1px rgba(255,255,255,.1);
+      transform: perspective(1300px) rotateY(-2deg) rotateX(.5deg);
+      transform-origin: center;
+      animation: previewArrive 1.1s var(--ease) both;
+    }
+    .preview-topline { display: flex; align-items: center; gap: 6px; height: 30px; padding: 0 11px; border-bottom: 1px solid rgba(255,255,255,.07); background: #100a18; }
+    .preview-topline i { width: 6px; height: 6px; border-radius: 50%; background: #5c4b64; }
+    .preview-topline i:first-child { background: #d82299; }
+    .preview-topline span { margin-left: 5px; color: #9b8aa4; font-family: "DM Mono", monospace; font-size: 8px; }
+    .preview-frame iframe { display: block; width: 100%; height: calc(100% - 30px); border: 0; background: #08040f; }
+    .preview-caption { margin: 10px 0 0 4px; color: var(--quiet); font-size: 9px; line-height: 1.55; }
+
+    .download-strip { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: linear-gradient(90deg,rgba(30,10,75,.22),rgba(216,34,153,.07),rgba(30,10,75,.22)); }
+    .strip-inner { display: flex; align-items: center; justify-content: space-between; gap: 26px; width: min(1180px,calc(100% - 56px)); min-height: 94px; margin: 0 auto; }
+    .strip-copy { display: flex; align-items: center; gap: 14px; }
+    .strip-mark { display: grid; place-items: center; width: 37px; height: 37px; border: 1px solid rgba(216,34,153,.34); border-radius: 10px; color: #f08cca; background: rgba(30,10,75,.68); font-family: "DM Mono", monospace; font-size: 10px; }
+    .strip-copy p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.55; }
+    .strip-copy strong { color: var(--ink); font-weight: 600; }
+    .strip-link { flex: 0 0 auto; color: #f39bd1; font-size: 10px; text-decoration: none; }
+    .strip-link:hover { color: #fff; }
+
+    .publish { width: min(1180px,calc(100% - 56px)); margin: 0 auto; padding: 88px 0 96px; }
+    .section-head { display: flex; align-items: end; justify-content: space-between; gap: 30px; margin-bottom: 29px; }
+    .section-head .kicker { color: #ba91cb; }
+    h2 { margin: 12px 0 0; font-size: clamp(26px,3.2vw,38px); font-weight: 500; line-height: 1.12; }
+    .section-head > p { max-width: 360px; margin: 0 0 3px; color: var(--muted); font-size: 11px; line-height: 1.7; }
+    .steps { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+    .step { min-height: 145px; padding: 20px 23px 22px 0; }
+    .step + .step { padding-left: 23px; border-left: 1px solid var(--line); }
+    .step-index { color: #e46ab7; font-family: "DM Mono", monospace; font-size: 9px; }
+    .step h3 { margin: 15px 0 7px; font-size: 13px; font-weight: 600; }
+    .step p { max-width: 290px; margin: 0; color: var(--muted); font-size: 10px; line-height: 1.65; }
+    .step a { color: #f09bd0; text-decoration: none; }
+    .step a:hover { text-decoration: underline; }
+    .safety-note { display: flex; align-items: flex-start; gap: 11px; max-width: 850px; margin-top: 20px; color: #aa9cb5; font-size: 9px; line-height: 1.7; }
+    .safety-note strong { color: #e7ddec; font-weight: 600; }
+    .safety-icon { flex: 0 0 auto; margin-top: 2px; color: var(--mint); }
+
+    footer { border-top: 1px solid var(--line); }
+    .footer-inner { display: flex; align-items: center; justify-content: space-between; gap: 20px; width: min(1180px,calc(100% - 56px)); min-height: 66px; margin: 0 auto; color: var(--quiet); font-family: "DM Mono", monospace; font-size: 8px; }
+    .footer-inner a { color: #ba91cb; text-decoration: none; }
+    .footer-inner a:hover { color: var(--ink); }
+    .reveal { opacity: 0; transform: translateY(14px); animation: reveal .75s var(--ease) .12s forwards; }
+    .reveal-delay { animation-delay: .25s; }
+    @keyframes reveal { to { opacity: 1; transform: translateY(0); } }
+    @keyframes previewArrive { from { opacity: 0; filter: blur(12px); transform: perspective(1300px) rotateY(-2deg) translateY(13px) scale(.985); } to { opacity: 1; filter: blur(0); transform: perspective(1300px) rotateY(-2deg) rotateX(.5deg) scale(1); } }
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: minmax(0,.9fr) minmax(340px,1.1fr); gap: 35px; min-height: 630px; }
+      .preview-frame { height: 550px; }
+      h1 { font-size: clamp(42px,6vw,58px); }
+    }
+    @media (max-width: 700px) {
+      .topbar, .hero, .strip-inner, .publish, .footer-inner { width: min(100% - 36px,540px); }
+      .topbar { height: 69px; }
+      .top-actions { gap: 12px; }
+      .top-link { display: none; }
+      .top-download { padding: 9px 11px; font-size: 9px; }
+      .hero { grid-template-columns: 1fr; gap: 31px; min-height: auto; padding: 55px 0 42px; }
+      .hero-copy { max-width: 560px; padding: 0; }
+      h1 { max-width: 540px; margin-top: 19px; font-size: clamp(42px,11vw,61px); }
+      .hero-copy > p { font-size: 13px; }
+      .hero-meta { margin-top: 25px; }
+      .preview-wrap { justify-self: center; width: min(100%,440px); padding: 0; }
+      .preview-frame { height: min(144vw,610px); min-height: 480px; transform: none; }
+      .preview-caption { max-width: 390px; }
+      .strip-inner { align-items: flex-start; flex-direction: column; justify-content: center; gap: 12px; padding: 18px 0; }
+      .strip-copy { align-items: flex-start; }
+      .strip-link { margin-left: 51px; }
+      .publish { padding: 65px 0 70px; }
+      .section-head { align-items: flex-start; flex-direction: column; gap: 12px; margin-bottom: 22px; }
+      .section-head > p { max-width: 490px; }
+      .steps { grid-template-columns: 1fr; }
+      .step { min-height: auto; padding: 17px 0 19px; }
+      .step + .step { padding-left: 0; border-top: 1px solid var(--line); border-left: 0; }
+      .step h3 { margin-top: 10px; }
+      .footer-inner { align-items: flex-start; flex-direction: column; justify-content: center; gap: 8px; padding: 15px 0; }
+    }
+    @media (max-width: 380px) {
+      .topbar, .hero, .strip-inner, .publish, .footer-inner { width: calc(100% - 28px); }
+      .brand img { width: 32px; height: 32px; }
+      .brand-name strong { font-size: 13px; }
+      .brand-name span { font-size: 8px; }
+      .hero-meta { gap: 14px; }
+      .preview-frame { min-height: 445px; }
+      .download-button { min-height: 45px; padding: 0 13px; font-size: 10px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-delay: 0ms !important; transition-duration: .01ms !important; }
+      .reveal { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="site-shell">
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="MailScope home">
+        <img src="icons/brand-logo.png" alt="">
+        <span class="brand-name"><strong>MailScope</strong><span>Gmail App &amp; Link Detector</span></span>
+      </a>
+      <nav class="top-actions" aria-label="Main navigation">
+        <a class="top-link" href="#publishing">Publishing</a>
+        <a class="top-download" href="Gmail-App-Link-Detector-1.0.0-upload.zip" download>
+          Download package <span aria-hidden="true">↓</span>
+        </a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy reveal">
+          <span class="kicker">A clearer view of your Google connections</span>
+          <h1 id="hero-title">Your inbox.<br><span>Your connections.</span></h1>
+          <p>Review Google-linked apps and scan Gmail categories in one private Chrome side panel. Your messages stay in your browser.</p>
+          <div class="hero-actions">
+            <a class="download-button" href="Gmail-App-Link-Detector-1.0.0-upload.zip" download>
+              Download extension package <span class="arrow" aria-hidden="true">↓</span>
+            </a>
+          </div>
+          <div class="download-note">ZIP · Manifest V3 · version 1.0.0</div>
+          <div class="hero-meta" aria-label="Extension features">
+            <div><strong>5 categories</strong><span>Primary + more</span></div>
+            <div><strong>On-device</strong><span>Mail scan data</span></div>
+            <div><strong>Chrome</strong><span>Side panel</span></div>
+          </div>
+        </div>
+
+        <div class="preview-wrap reveal reveal-delay">
+          <div class="preview-label"><span>Extension preview</span><span>Live interface</span></div>
+          <div class="preview-frame">
+            <div class="preview-topline" aria-hidden="true"><i></i><i></i><i></i><span>MailScope · Gmail App &amp; Link Detector</span></div>
+            <iframe src="sidepanel.html" title="MailScope Chrome extension interface preview" loading="eager"></iframe>
+          </div>
+          <p class="preview-caption">Preview of the extension side panel. Gmail features become available after installation and Google sign-in.</p>
+        </div>
+      </section>
+
+      <section class="download-strip" aria-label="Installation note">
+        <div class="strip-inner">
+          <div class="strip-copy">
+            <span class="strip-mark" aria-hidden="true">ZIP</span>
+            <p><strong>This is a publishing package.</strong><br>For a simple Add to Chrome install, publish it in the Chrome Web Store first.</p>
+          </div>
+          <a class="strip-link" href="https://chromewebstore.google.com/devconsole" target="_blank" rel="noopener">Open Chrome Web Store dashboard ↗</a>
+        </div>
+      </section>
+
+      <section id="publishing" class="publish" aria-labelledby="publish-title">
+        <div class="section-head">
+          <div><span class="kicker">From package to install</span><h2 id="publish-title">Put MailScope on the Web Store.</h2></div>
+          <p>Chrome does not allow websites to silently install extensions. The Web Store is the standard public install path.</p>
+        </div>
+        <div class="steps">
+          <article class="step">
+            <span class="step-index">01 / PACKAGE</span>
+            <h3>Download this ZIP</h3>
+            <p>Use the package above. It contains the extension manifest and required runtime assets at the archive root.</p>
+          </article>
+          <article class="step">
+            <span class="step-index">02 / PUBLISH</span>
+            <h3>Upload in Developer Dashboard</h3>
+            <p>Create the store listing, complete its privacy and permission disclosures, then submit it for review.</p>
+          </article>
+          <article class="step">
+            <span class="step-index">03 / INSTALL</span>
+            <h3>Share the store listing</h3>
+            <p>After approval, link your website's install button to the listing. Each user confirms with <strong>Add to Chrome</strong>.</p>
+          </article>
+        </div>
+        <p class="safety-note"><span class="safety-icon" aria-hidden="true">●</span><span><strong>Before publishing:</strong> configure the Google OAuth redirect URI for the published extension ID and review Gmail scopes. The extension requests read and modify access; message removal moves mail to Trash.</span></p>
+      </section>
+    </main>
+
+    <footer>
+      <div class="footer-inner">
+        <span>© <span id="year">2026</span> MailScope · Gmail App &amp; Link Detector</span>
+        <a href="https://myaccount.google.com/linkedapps" target="_blank" rel="noopener">Google Account connections ↗</a>
+      </div>
+    </footer>
+  </div>
+  <script>
+    document.querySelector('#year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

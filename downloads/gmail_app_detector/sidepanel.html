@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gmail App &amp; Link Detector</title>
+<link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+<div class="app-shell">
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo"><img src="icons/brand-logo.png" alt=""></div>
+      <div>
+        <h1>MailScope</h1>
+        <span>Gmail App &amp; Link Detector</span>
+      </div>
+    </div>
+    <div class="profile-menu-wrap">
+      <button id="profileToggle" class="profile-button" type="button" aria-label="Google account menu" aria-haspopup="menu" aria-expanded="false" title="Google account">
+        <svg id="accountSilhouette" class="account-silhouette" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.2"></circle><path d="M5.5 20c.5-3.4 2.7-5.3 6.5-5.3s6 1.9 6.5 5.3"></path></svg>
+        <span id="accountInitial" hidden></span>
+        <img id="accountPhoto" class="account-photo" alt="" hidden referrerpolicy="no-referrer">
+      </button>
+      <div id="creditsHover" class="credits-hover" role="status" aria-live="polite" aria-hidden="true">
+        <span class="credits-orb"><span id="creditsRemaining">3</span></span>
+        <span class="credits-copy"><strong>credits</strong><small>left to scan</small></span>
+      </div>
+      <div id="profileMenu" class="profile-menu glass-panel" role="menu" hidden>
+        <button type="button" role="menuitem" data-profile-action="settings">Settings</button>
+        <button type="button" role="menuitem" data-profile-action="logout">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero" id="heroSection">
+    <div class="hero-copy">
+      <div class="eyebrow">SECURE PRIVATE ANALYTICS</div>
+      <h2>Manage your Google-linked apps.</h2>
+      <p>Review linked apps one at a time, separate games from other apps, and keep your mailbox organized.</p>
+    </div>
+    <button id="signInBtn" class="primary">Sign in with Google</button>
+  </section>
+
+  <nav class="nav-tabs" aria-label="Workspace">
+    <button class="tab-btn active" data-tab="appsTab">Apps Scan</button>
+    <button class="tab-btn" data-tab="mailsTab">Mails Scan</button>
+  </nav>
+
+  <!-- Toolbar & Search -->
+  <section class="toolbar">
+    <div class="search-wrap">
+      <span class="search-icon" aria-hidden="true"></span>
+      <input id="search" type="search" placeholder="Search apps, domains or senders..." aria-label="Search current view">
+    </div>
+    <button id="scanBtn" class="secondary">Scan Apps</button>
+  </section>
+
+  <!-- Stats Grid -->
+  <section class="stats">
+    <div><b id="appCount">0</b><span id="appCountLabel">Linked Apps</span></div>
+    <div><b id="bulkCount">0</b><span>Bulk Senders</span></div>
+    <div><b id="emailCount">0</b><span>Scanned Mails</span></div>
+  </section>
+
+  <main class="list-container">
+    <div class="workspace-track" id="workspaceTrack" data-view="appsTab">
+    <section id="appsTab" class="tab-content active" aria-label="Google linked apps">
+      <div class="scope-note">
+        <p id="appSourceNote">Import your Google linked apps. Remove access one at a time or use the warning-protected bulk action.</p>
+        <a href="https://myaccount.google.com/linkedapps" target="_blank" rel="noopener">Open Google list ↗</a>
+      </div>
+      <div class="source-tabs" role="group" aria-label="Choose app list source">
+        <button class="source-tab active" type="button" data-app-source="linked" aria-pressed="true">Google linked</button>
+        <button class="source-tab" type="button" data-app-source="email" aria-pressed="false">Email links</button>
+      </div>
+      <div id="bulkAccessPanel" class="bulk-access-panel" hidden>
+        <div><strong>Google Account access</strong><span>Revoke access for every listed app.</span></div>
+        <button id="removeAllAccessBtn" class="remove-all-access-btn" type="button" disabled>Remove all access</button>
+      </div>
+      <div class="category-tabs" role="group" aria-label="Filter detected services">
+        <button class="category-tab active" type="button" data-app-filter="all" aria-pressed="true">All</button>
+        <button class="category-tab" type="button" data-app-filter="app" aria-pressed="false">Apps</button>
+        <button class="category-tab" type="button" data-app-filter="game" aria-pressed="false">Games</button>
+      </div>
+      <div id="appList" class="list">
+        <div class="empty">
+          <span class="empty-icon service-mark" aria-hidden="true"></span>
+          <h3>No Google linked apps loaded</h3>
+          <p>Choose Sync linked apps to import the list from your Google Account.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="mailsTab" class="tab-content" aria-label="Gmail categories">
+      <nav class="mail-category-tabs" role="tablist" aria-label="Gmail inbox categories">
+        <button id="categoryTab-primary" type="button" role="tab" data-mail-category="primary" aria-selected="true" class="active">Primary</button>
+        <button id="categoryTab-promotions" type="button" role="tab" data-mail-category="promotions" aria-selected="false">Promotions</button>
+        <button id="categoryTab-updates" type="button" role="tab" data-mail-category="updates" aria-selected="false">Updates</button>
+        <button id="categoryTab-social" type="button" role="tab" data-mail-category="social" aria-selected="false">Social</button>
+        <button id="categoryTab-spam" type="button" role="tab" data-mail-category="spam" aria-selected="false">Spam</button>
+      </nav>
+      <div id="mailPanels" class="mail-panels" data-active-category="primary">
+        <section class="mail-category-panel" role="tabpanel" data-mail-panel="primary" aria-labelledby="categoryTab-primary">
+          <div class="mail-selection-bar">
+            <label><input type="checkbox" data-select-category="primary"><span>Select all</span></label>
+            <span data-selected-count="primary">0 selected</span>
+            <button class="danger" type="button" data-delete-selected="primary" disabled>Delete selected</button>
+            <button class="delete-all-btn" type="button" data-delete-all="primary" disabled>Delete All</button>
+          </div>
+          <div class="list" data-mail-list="primary"><div class="empty"><span class="empty-icon mail-mark" aria-hidden="true"></span><h3>Primary inbox</h3><p>Scan to load the latest messages from your Gmail Primary inbox.</p></div></div>
+        </section>
+        <section class="mail-category-panel" role="tabpanel" data-mail-panel="promotions" aria-labelledby="categoryTab-promotions" aria-hidden="true">
+          <div class="mail-selection-bar">
+            <label><input type="checkbox" data-select-category="promotions"><span>Select all</span></label>
+            <span data-selected-count="promotions">0 selected</span>
+            <button class="danger" type="button" data-delete-selected="promotions" disabled>Delete selected</button>
+            <button class="delete-all-btn" type="button" data-delete-all="promotions" disabled>Delete All</button>
+          </div>
+          <div class="list" data-mail-list="promotions"><div class="empty"><span class="empty-icon mail-mark" aria-hidden="true"></span><h3>Promotions</h3><p>Scan to load messages in this Gmail category.</p></div></div>
+        </section>
+        <section class="mail-category-panel" role="tabpanel" data-mail-panel="updates" aria-labelledby="categoryTab-updates" aria-hidden="true">
+          <div class="mail-selection-bar">
+            <label><input type="checkbox" data-select-category="updates"><span>Select all</span></label>
+            <span data-selected-count="updates">0 selected</span>
+            <button class="danger" type="button" data-delete-selected="updates" disabled>Delete selected</button>
+            <button class="delete-all-btn" type="button" data-delete-all="updates" disabled>Delete All</button>
+          </div>
+          <div class="list" data-mail-list="updates"><div class="empty"><span class="empty-icon mail-mark" aria-hidden="true"></span><h3>Updates</h3><p>Scan to load messages in this Gmail category.</p></div></div>
+        </section>
+        <section class="mail-category-panel" role="tabpanel" data-mail-panel="social" aria-labelledby="categoryTab-social" aria-hidden="true">
+          <div class="mail-selection-bar">
+            <label><input type="checkbox" data-select-category="social"><span>Select all</span></label>
+            <span data-selected-count="social">0 selected</span>
+            <button class="danger" type="button" data-delete-selected="social" disabled>Delete selected</button>
+            <button class="delete-all-btn" type="button" data-delete-all="social" disabled>Delete All</button>
+          </div>
+          <div class="list" data-mail-list="social"><div class="empty"><span class="empty-icon mail-mark" aria-hidden="true"></span><h3>Social</h3><p>Scan to load messages in this Gmail category.</p></div></div>
+        </section>
+        <section class="mail-category-panel" role="tabpanel" data-mail-panel="spam" aria-labelledby="categoryTab-spam" aria-hidden="true">
+          <div class="mail-selection-bar">
+            <label><input type="checkbox" data-select-category="spam"><span>Select all</span></label>
+            <span data-selected-count="spam">0 selected</span>
+            <button class="danger" type="button" data-delete-selected="spam" disabled>Delete selected</button>
+            <button class="delete-all-btn" type="button" data-delete-all="spam" disabled>Delete All</button>
+          </div>
+          <div class="list" data-mail-list="spam"><div class="empty"><span class="empty-icon mail-mark" aria-hidden="true"></span><h3>Spam</h3><p>Scan to load messages in Gmail Spam.</p></div></div>
+        </section>
+      </div>
+    </section>
+    </div>
+  </main>
+
+  <dialog id="bulkRemoveDialog" class="settings-dialog bulk-warning-dialog" aria-labelledby="bulkRemoveTitle">
+    <span class="dialog-eyebrow">GOOGLE ACCOUNT</span>
+    <h2 id="bulkRemoveTitle">Remove access from every app?</h2>
+    <p id="bulkRemoveCount">This will revoke Google Account access for all listed linked apps.</p>
+    <p class="bulk-warning-note">Agar koi app zaroori hai, <strong>Skip</strong> karein. Continue karne par har listed app ka access remove hoga; baad mein app dobara permission maang sakti hai.</p>
+    <p id="bulkRemoveProgress" class="bulk-remove-progress" role="status" aria-live="polite" hidden></p>
+    <div class="bulk-warning-actions">
+      <button id="bulkRemoveSkip" class="secondary" type="button">Skip</button>
+      <button id="bulkRemoveConfirm" class="danger" type="button">Continue and remove</button>
+    </div>
+  </dialog>
+
+  <dialog id="settingsDialog" class="settings-dialog">
+    <form method="dialog"><button class="dialog-close" aria-label="Close settings">×</button></form>
+    <span class="dialog-eyebrow">MAILSCOPE</span>
+    <h2>Settings</h2>
+    <p>Your Gmail messages and scan results stay in this browser. Messages are moved to Trash only after you confirm an action.</p>
+    <a href="https://myaccount.google.com/linkedapps" target="_blank" rel="noopener">Manage Google account connections</a>
+    <button class="secondary dialog-done" type="button" id="settingsDone">Done</button>
+  </dialog>
+</div>
+<script src="sidepanel.js"></script>
+</body>
+</html>

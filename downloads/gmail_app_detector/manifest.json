@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "Gmail App & Link Detector",
+  "version": "1.0.0",
+  "description": "Review Google Linked apps and Gmail inbox categories in a dark glass side panel.",
+  "permissions": ["identity", "storage", "sidePanel", "scripting"],
+  "optional_host_permissions": ["https://myaccount.google.com/*"],
+  "host_permissions": ["https://gmail.googleapis.com/*", "https://www.googleapis.com/*", "https://openidconnect.googleapis.com/*"],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; img-src 'self' data: https://www.google.com https://*.googleusercontent.com https://*.gstatic.com"
+  },
+  "action": {
+    "default_title": "Gmail App Detector",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png"
+    }
+  },
+  "side_panel": { "default_path": "sidepanel.html" },
+  "background": { "service_worker": "background.js", "type": "module" },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
