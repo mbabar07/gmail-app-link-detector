@@ -6,14 +6,29 @@
 <meta name="theme-color" content="#0b0714">
 <meta name="description" content="Gmail App & Link Detector — a clearer way to review Gmail-related app connections and links.">
 <title>Gmail App & Link Detector — Your inbox, more in control</title>
-<link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+<link rel="icon" href="https://raw.githubusercontent.com/mbabar07/gmail-app-link-detector/main/profile-img/brand-logo.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0b0714;--panel:#151021;--panel2:#1b1229;--text:#f8f4ff;--muted:#b8adc9;--pink:#f044b5;--violet:#8b5cf6;--line:rgba(255,255,255,.11);--max:1160px}
 *{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:90px}
-body{margin:0;background:var(--bg);color:var(--text);font-family:"DM Sans",sans-serif;line-height:1.6;overflow-x:hidden;position:relative}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"DM Sans",sans-serif;line-height:1.6;overflow-x:hidden;position:relative;opacity:0;transition:opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1)}
+body.loaded{opacity:1}
+
+/* Smooth Page Transition Overlay (Black Fade) */
+#page-transition-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: #0b0714;
+  z-index: 99999;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+body.loaded #page-transition-overlay {
+  opacity: 0;
+}
 
 /* Mouse Moving Spotlight Effect */
 #cursor-glow {
@@ -28,7 +43,6 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:"DM Sans",sans-
   z-index: 1;
 }
 
-/* Background Gradients */
 body::before {
   content: '';
   position: absolute;
@@ -43,7 +57,7 @@ a{color:inherit;text-decoration:none}.wrap{width:min(var(--max),calc(100% - 40px
 .navin{height:76px;display:flex;align-items:center;justify-content:space-between;gap:20px}
 .brand{display:flex;align-items:center;gap:11px;font-weight:700;letter-spacing:-.03em;transition:transform .3s}
 .brand:hover{transform:scale(1.02)}
-.brand img{width:39px;height:39px}.brand span span{color:#f27acb}
+.brand img{width:39px;height:39px;border-radius:8px;object-fit:cover}.brand span span{color:#f27acb}
 .links{display:flex;align-items:center;gap:25px;color:var(--muted);font-size:13px}.links a:hover{color:white}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:13px 19px;border-radius:999px;background:linear-gradient(110deg,#d6299c,#7339d8);color:#fff;font-weight:700;font-size:13px;border:1px solid #f27acb;box-shadow:0 8px 32px #d6299c2b;transition:.3s cubic-bezier(0.16, 1, 0.3, 1)}
 .btn:hover{transform:translateY(-3px) scale(1.02);filter:brightness(1.15);box-shadow:0 12px 40px rgba(214, 41, 156, 0.4)}
@@ -58,7 +72,6 @@ a{color:inherit;text-decoration:none}.wrap{width:min(var(--max),calc(100% - 40px
 .hero p{max-width:540px;color:var(--muted);font-size:16px;line-height:1.85}
 .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}.note{color:#9387a6;font-size:11px;margin-top:16px}
 
-/* Smooth Interactive Demo Card */
 .demo{position:relative;padding:19px;border:1px solid #f7b3ed40;border-radius:25px;background:linear-gradient(145deg,#281638ed,#110b1ded);box-shadow:0 35px 100px #0008,0 0 65px #d6299c19;transform:perspective(1000px) rotateY(-4deg) rotateX(2deg);transition:transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);animation: floatCard 6s ease-in-out infinite}
 .demo:hover{transform:perspective(1000px) rotateY(0deg) rotateX(0deg) scale(1.02);border-color:#f044b5;box-shadow:0 40px 120px rgba(0,0,0,0.9),0 0 80px rgba(214,41,156,0.3)}
 @keyframes floatCard { 0%, 100% { transform: translateY(0px) perspective(1000px) rotateY(-4deg) rotateX(2deg); } 50% { transform: translateY(-8px) perspective(1000px) rotateY(-2deg) rotateX(1deg); } }
@@ -86,7 +99,6 @@ a{color:inherit;text-decoration:none}.wrap{width:min(var(--max),calc(100% - 40px
 .section h2{font:600 clamp(32px,4.4vw,54px)/1.08 "Space Grotesk",sans-serif;letter-spacing:-.06em;margin:12px 0}
 .head p,.muted{color:var(--muted)}
 
-/* Features Cards with Smooth Hover Glow */
 .features{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
 .feature{grid-column:span 2;padding:24px;min-height:220px;border:1px solid var(--line);border-radius:19px;background:linear-gradient(145deg,#ffffff09,#8b5cf60a);transition:.3s cubic-bezier(0.16, 1, 0.3, 1);position:relative;overflow:hidden}
 .feature::before{content:'';position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle at 50% 0%, rgba(240,68,181,0.15), transparent 70%);opacity:0;transition:.3s}
@@ -140,12 +152,15 @@ a{color:inherit;text-decoration:none}.wrap{width:min(var(--max),calc(100% - 40px
 </head>
 <body>
 
+<!-- Smooth Page Transition Overlay -->
+<div id="page-transition-overlay"></div>
+
 <!-- Mouse Follower Spotlight -->
 <div id="cursor-glow"></div>
 
 <header class="nav"><div class="wrap navin">
-<a class="brand" href="#top"><img src="assets/logo.svg" alt=""><span>Gmail App <span>&amp; Link Detector</span></span></a>
-<nav class="links" aria-label="Main navigation"><a href="#features">Features</a><a href="#privacy">Privacy</a><a href="#install">Install</a><a class="btn" href="#download">Get extension ↗</a></nav>
+<a class="brand anim-link" href="#top"><img src="https://raw.githubusercontent.com/mbabar07/gmail-app-link-detector/main/profile-img/brand-logo.png" alt="Logo"><span>Gmail App <span>&amp; Link Detector</span></span></a>
+<nav class="links" aria-label="Main navigation"><a href="#features" class="anim-link">Features</a><a href="#privacy" class="anim-link">Privacy</a><a href="#install" class="anim-link">Install</a><a class="btn anim-link" href="#download">Get extension ↗</a></nav>
 </div></header>
 
 <main id="top">
@@ -153,7 +168,7 @@ a{color:inherit;text-decoration:none}.wrap{width:min(var(--max),calc(100% - 40px
 <div><div class="tag"><i></i> A clearer view of your Gmail connections</div>
 <h1>Your inbox.<br><span class="grad">Your connections.</span><br>In control.</h1>
 <p>Review connected apps and associated links in a focused workspace designed to make your Gmail-related connections easier to understand.</p>
-<div class="actions"><a class="btn" href="#download">Download extension ↓</a><a class="btn ghost" href="#features">Explore features ↘</a></div>
+<div class="actions"><a class="btn anim-link" href="#download">Download extension ↓</a><a class="btn ghost anim-link" href="#features">Explore features ↘</a></div>
 <div class="note">Chrome desktop · Simple setup · Review before you act</div></div>
 <div class="demo" aria-label="Illustrative extension interface">
 <div class="demohead"><span>✉ Connection overview</span><span class="badge">UI PREVIEW</span></div>
@@ -209,10 +224,40 @@ a{color:inherit;text-decoration:none}.wrap{width:min(var(--max),calc(100% - 40px
 <section class="wrap" id="download"><div class="cta"><div class="kicker">Ready when you are</div><h2>A more considered way to review <span class="grad">your connections.</span></h2><p>Download the Chrome extension package from this site. Only install it after checking the package and its permissions.</p><a class="btn" href="Gmail-App-Link-Detector-1.0.0-upload.zip" download>Download extension ZIP ↓</a><div class="note">Make sure the ZIP file is uploaded directly to the root of your repository.</div></div></section>
 </main>
 
-<footer class="wrap footer"><a class="brand" href="#top"><img src="assets/logo.svg" alt=""><span>Gmail App <span>&amp; Link Detector</span></span></a><span>Built for clarity · Chrome desktop</span><a href="#privacy">Privacy &amp; permissions ↑</a></footer>
+<footer class="wrap footer"><a class="brand anim-link" href="#top"><img src="https://raw.githubusercontent.com/mbabar07/gmail-app-link-detector/main/profile-img/brand-logo.png" alt="Logo"><span>Gmail App <span>&amp; Link Detector</span></span></a><span>Built for clarity · Chrome desktop</span><a href="#privacy" class="anim-link">Privacy &amp; permissions ↑</a></footer>
 
-<!-- Mouse Cursor Script -->
+<!-- Interactive Scripts -->
 <script>
+// Page load fade-in effect
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    document.body.classList.add('loaded');
+  }, 50);
+});
+
+// Smooth Black Fade Transition on Navigation/Links
+document.querySelectorAll('a').forEach(link => {
+  link.addEventListener('click', function(e) {
+    const href = this.getAttribute('href');
+    if(href && href.startsWith('#')) {
+      // Smooth scroll for anchor links
+      e.preventDefault();
+      const target = document.querySelector(href);
+      if(target) {
+        target.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else if(href && !href.startsWith('javascript') && !this.hasAttribute('download')) {
+      // Smooth fade out for external page navigations
+      e.preventDefault();
+      document.body.classList.remove('loaded');
+      setTimeout(() => {
+        window.location.href = href;
+      }, 800);
+    }
+  });
+});
+
+// Mouse Follower Spotlight
 const cursorGlow = document.getElementById('cursor-glow');
 window.addEventListener('mousemove', (e) => {
   cursorGlow.style.left = e.clientX + 'px';
