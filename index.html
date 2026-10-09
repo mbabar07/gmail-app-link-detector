@@ -12,9 +12,26 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0b0714;--panel:#151021;--panel2:#1b1229;--text:#f8f4ff;--muted:#b8adc9;--pink:#f044b5;--violet:#8b5cf6;--line:rgba(255,255,255,.11);--max:1160px}
-*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:90px}
-body{margin:0;background:var(--bg);color:var(--text);font-family:"DM Sans",sans-serif;line-height:1.6;overflow-x:hidden;position:relative;opacity:0;transition:opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1)}
-body.loaded{opacity:1}
+*{box-sizing:border-box}
+
+/* iOS Style Smooth Momentum Scroll */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 90px;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "DM Sans", sans-serif;
+  line-height: 1.6;
+  overflow-x: hidden;
+  position: relative;
+  opacity: 0;
+  transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  -webkit-font-smoothing: antialiased;
+}
+body.loaded { opacity: 1; }
 
 /* Smooth Page Transition Overlay (Black Fade) */
 #page-transition-overlay {
@@ -26,20 +43,18 @@ body.loaded{opacity:1}
   opacity: 1;
   transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
-body.loaded #page-transition-overlay {
-  opacity: 0;
-}
+body.loaded #page-transition-overlay { opacity: 0; }
 
-/* Scroll Fade & Slide Animations (Scroll Reveal) */
+/* iOS Scroll Reveal Fade & Slide Animation */
 .reveal-up {
   opacity: 0;
-  transform: translateY(45px);
-  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(50px) scale(0.98);
+  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: opacity, transform;
 }
 .reveal-up.active {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
 }
 
 /* Mouse Moving Spotlight Effect */
@@ -282,10 +297,10 @@ window.addEventListener('DOMContentLoaded', () => {
   }, 50);
 });
 
-// Scroll Reveal Observer (Fade in when scrolling down, Fade out when scrolling up/away)
+// High-Performance iOS Style Scroll Observer (Fade In & Fade Out dynamically)
 const observerOptions = {
-  threshold: 0.15,
-  rootMargin: "0px 0px -50px 0px"
+  threshold: 0.08,
+  rootMargin: "0px 0px -30px 0px"
 };
 
 const observer = new IntersectionObserver((entries) => {
