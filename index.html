@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0b0714">
-<meta name="description" content="Gmail App & Link Detector — a clearer way to review Gmail-related app connections and links.">
+<meta name="description" content="Extoza Gmail App & Link Detector — a clearer way to review Gmail-related app connections and links securely.">
 <title>Extoza Gmail App & Link Detector — Your inbox, more in control</title>
 <link rel="icon" href="https://raw.githubusercontent.com/mbabar07/gmail-app-link-detector/main/assets/logo.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -32,7 +32,6 @@ body {
 }
 body.loaded { opacity: 1; }
 
-/* Smooth Page Transition Overlay (Black Fade) */
 #page-transition-overlay {
   position: fixed;
   top: 0; left: 0; width: 100%; height: 100%;
@@ -44,7 +43,6 @@ body.loaded { opacity: 1; }
 }
 body.loaded #page-transition-overlay { opacity: 0; }
 
-/* Floating Particles Background Animation */
 #particles-canvas {
   position: fixed;
   top: 0; left: 0; width: 100%; height: 100%;
@@ -52,7 +50,6 @@ body.loaded #page-transition-overlay { opacity: 0; }
   z-index: 1;
 }
 
-/* iOS Scroll Reveal Fade & Slide Animation */
 .reveal-up {
   opacity: 0;
   transform: translateY(50px) scale(0.98);
@@ -64,7 +61,6 @@ body.loaded #page-transition-overlay { opacity: 0; }
   transform: translateY(0) scale(1);
 }
 
-/* Mouse Moving Spotlight Effect */
 #cursor-glow {
   position: fixed;
   width: 500px;
@@ -97,7 +93,6 @@ a{color:inherit;text-decoration:none}.wrap{width:min(var(--max),calc(100% - 40px
 .btn:hover{transform:translateY(-3px) scale(1.02);filter:brightness(1.15);box-shadow:0 12px 40px rgba(214, 41, 156, 0.4)}
 .btn.ghost{background:#ffffff08;border-color:var(--line);box-shadow:none}.btn.ghost:hover{background:#ffffff12;border-color:#f044b57a}
 
-/* Attractive Download Button Click Glow */
 .download-btn { transition: all 0.3s ease; }
 .download-btn:active { transform: scale(0.95); }
 .download-btn.clicked { animation: neonPulse 1.5s infinite alternate; }
@@ -106,7 +101,6 @@ a{color:inherit;text-decoration:none}.wrap{width:min(var(--max),calc(100% - 40px
   100% { box-shadow: 0 0 25px #f044b5, 0 0 50px #8b5cf6, inset 0 0 20px #ff9edb; border-color: #ff9edb; }
 }
 
-/* Thank You Popup Modal Styles */
 #thankyou-modal {
   position: fixed; inset: 0; background: rgba(11, 7, 20, 0.85); backdrop-filter: blur(10px);
   display: flex; align-items: center; justify-content: center; z-index: 999999; opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
@@ -121,7 +115,6 @@ a{color:inherit;text-decoration:none}.wrap{width:min(var(--max),calc(100% - 40px
 .modal-close-btn { padding: 10px 24px; border-radius: 99px; background: linear-gradient(110deg, #d6299c, #7339d8); color: #fff; font-weight: 700; border: none; cursor: pointer; transition: .2s; }
 .modal-close-btn:hover { filter: brightness(1.15); transform: translateY(-2px); }
 
-/* Copy-to-Clipboard Tooltip */
 .copy-badge {
   background: #f044b520; border: 1px solid #f044b560; color: #ff9cdb; padding: 3px 8px; border-radius: 6px; font-family: monospace; cursor: pointer; transition: 0.2s; position: relative; display: inline-block;
 }
@@ -131,7 +124,12 @@ a{color:inherit;text-decoration:none}.wrap{width:min(var(--max),calc(100% - 40px
 }
 .copy-badge.copied .copy-tooltip { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-/* FAQ Smooth Accordion */
+/* FAQ Search Input */
+.faq-search-box {
+  width: 100%; padding: 14px 18px; margin-bottom: 24px; background: #ffffff05; border: 1px solid var(--line); border-radius: 14px; color: var(--text); font-size: 14px; outline: none; transition: 0.3s;
+}
+.faq-search-box:focus { border-color: var(--pink); box-shadow: 0 0 15px rgba(240,68,181,0.2); }
+
 .faq details {
   padding: 18px 0; border-bottom: 1px solid var(--line); transition: background 0.3s;
 }
@@ -152,6 +150,14 @@ a{color:inherit;text-decoration:none}.wrap{width:min(var(--max),calc(100% - 40px
   from { opacity: 0; transform: translateY(-8px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Code Snippet Box */
+.code-preview {
+  background: #0d0817; border: 1px solid var(--line); border-radius: 16px; padding: 20px; font-family: monospace; font-size: 12px; color: #a599c2; overflow-x: auto; margin-top: 20px; box-shadow: inset 0 0 20px rgba(0,0,0,0.6);
+}
+.code-preview .keyword { color: #f044b5; }
+.code-preview .string { color: #9cdcfe; }
+.code-preview .property { color: #4ec9b0; }
 
 .hero{min-height:680px;display:grid;grid-template-columns:1.05fr .95fr;align-items:center;gap:45px;padding:70px 0 85px;position:relative;z-index:3}
 .tag{display:inline-flex;align-items:center;gap:9px;padding:7px 12px;border:1px solid #f044b54a;border-radius:99px;background:#f044b511;color:#ffabe3;text-transform:uppercase;letter-spacing:.12em;font-size:10px;font-weight:700;animation: pulseGlow 3s infinite ease-in-out}
@@ -237,13 +243,9 @@ a{color:inherit;text-decoration:none}.wrap{width:min(var(--max),calc(100% - 40px
 </head>
 <body>
 
-<!-- Smooth Page Transition Overlay -->
 <div id="page-transition-overlay"></div>
-
-<!-- Floating Starry Particles Background Canvas -->
 <canvas id="particles-canvas"></canvas>
 
-<!-- Thank You Popup Modal -->
 <div id="thankyou-modal">
   <div class="modal-content">
     <h3>Thank You</h3>
@@ -252,21 +254,20 @@ a{color:inherit;text-decoration:none}.wrap{width:min(var(--max),calc(100% - 40px
   </div>
 </div>
 
-<!-- Mouse Follower Spotlight -->
 <div id="cursor-glow"></div>
 
 <header class="nav"><div class="wrap navin">
 <a class="brand anim-link" href="#top"><img src="https://raw.githubusercontent.com/mbabar07/gmail-app-link-detector/main/assets/logo.png" alt="Logo"><span>Extoza <span>&amp; Link Detector</span></span></a>
-<nav class="links" aria-label="Main navigation"><a href="#features" class="anim-link">Features</a><a href="#privacy" class="anim-link">Privacy</a><a href="#install" class="anim-link">Install</a><a class="btn anim-link" href="#download">Get extension ↗</a></nav>
+<nav class="links" aria-label="Main navigation"><a href="#about" class="anim-link">About</a><a href="#features" class="anim-link">Features</a><a href="#privacy" class="anim-link">Privacy</a><a href="#install" class="anim-link">Install</a><a class="btn anim-link" href="#download">Get extension ↗</a></nav>
 </div></header>
 
 <main id="top">
 <section class="wrap hero">
-<div class="reveal-up"><div class="tag"><i></i> v1.0.0 Stable · Ready to Install</div>
+<div class="reveal-up"><div class="tag"><i></i> v1.0.0 Stable Build · Secure Release</div>
 <h1>Your inbox.<br><span class="grad">Your connections.</span><br>In control.</h1>
-<p>Review connected apps and associated links in a focused workspace designed to make your Gmail-related connections easier to understand.</p>
-<div class="actions"><a class="btn anim-link" href="#download">Download extension ↓</a><a class="btn ghost anim-link" href="#features">Explore features ↘</a></div>
-<div class="note">Chrome desktop · Simple setup · Review before you act</div></div>
+<p>Review connected apps and associated links in a focused workspace designed to make your Gmail-related connections easier to understand and manage securely.</p>
+<div class="actions"><a class="btn anim-link" href="#download">Download extension ↓</a><a class="btn ghost anim-link" href="#about">Learn more ↘</a></div>
+<div class="note">Chrome desktop · Simple setup · Secure local review</div></div>
 <div class="demo reveal-up" aria-label="Illustrative extension interface">
 <div class="demohead"><span>Connection overview</span><span class="badge">UI PREVIEW</span></div>
 <div class="label">Workspace snapshot</div><div class="stats"><div class="stat"><b>01</b><span>Account view</span></div><div class="stat"><b>04</b><span>Categories</span></div><div class="stat"><b>↗</b><span>Link review</span></div></div>
@@ -275,11 +276,25 @@ a{color:inherit;text-decoration:none}.wrap{width:min(var(--max),calc(100% - 40px
 <div class="item"><div class="appicon">◈</div><div class="itemtext"><b>Connected applications</b><span>Organized in one place</span></div><span class="badge">Apps</span></div>
 <div class="item"><div class="appicon">↗</div><div class="itemtext"><b>Associated links</b><span>Review before you act</span></div><span class="badge">Links</span></div>
 <div class="note">Illustration only — not live account data.</div>
-<div class="float one"><strong>Focused by design</strong>Less clutter, more clarity.</div><div class="float two"><strong>One clear workspace</strong>Review at your own pace.</div>
+<div class="float one"><b>Focused by design</b>Less clutter, more clarity.</div><div class="float two"><b>One clear workspace</b>Review at your own pace.</div>
 </div>
 </section>
 
-<section class="wrap section" id="features"><div class="head reveal-up"><div class="kicker">Thoughtful by design</div><h2>Everything you need.<br><span class="grad">Nothing you don't.</span></h2><p>A cleaner product experience for reviewing detected items and choosing your next step carefully.</p></div>
+<!-- Detailed About Section -->
+<section class="wrap section" id="about">
+<div class="head reveal-up">
+<div class="kicker">Extension Overview</div>
+<h2>What is Extoza Gmail App & Link Detector?</h2>
+<p>Extoza Gmail App & Link Detector is a specialized Chrome extension built to give users complete visibility over third-party applications, services, and associated external links linked or referenced through their Gmail ecosystem.</p>
+</div>
+<div class="features">
+<article class="feature reveal-up"><div class="ico">⌕</div><h3>App Discovery</h3><p>Scans and lists active application connections associated with your inbox sessions in an organized manner.</p></article>
+<article class="feature reveal-up"><div class="ico">↗</div><h3>Link Audit</h3><p>Isolates external links and redirection endpoints found in connected notifications, allowing careful examination before clicking.</p></article>
+<article class="feature reveal-up"><div class="ico">🛡</div><h3>Security Control</h3><p>Empowers you to identify unrecognized permissions or outdated application integrations and revoke access directly.</p></article>
+</div>
+</section>
+
+<section class="wrap section" id="features"><div class="head reveal-up"><div class="kicker">Core Capabilities</div><h2>Everything you need.<br><span class="grad">Nothing you don't.</span></h2><p>A cleaner product experience for reviewing detected items and choosing your next step carefully.</p></div>
 <div class="features">
 <article class="feature reveal-up"><div class="ico">⌕</div><h3>Account overview</h3><p>Keep your account context clear, with a sensible state when an account is not connected.</p></article>
 <article class="feature reveal-up"><div class="ico">◈</div><h3>Connected apps</h3><p>Review discovered app connections in an organized workspace, with clear selection controls.</p></article>
@@ -295,12 +310,48 @@ a{color:inherit;text-decoration:none}.wrap{width:min(var(--max),calc(100% - 40px
 <article class="step reveal-up"><div class="num">03 / REVIEW</div><h3>Explore connections</h3><p>Review the available views and detected items, then choose actions carefully.</p></article>
 </div></div></section>
 
-<section class="wrap section" id="privacy"><div class="privacy reveal-up"><div><div class="kicker">Privacy matters</div><h2>Clear about what it does.</h2><p class="muted">Always check the actual extension permissions and its privacy policy before installing. The final package should accurately describe what data it accesses, stores, or transmits.</p></div>
+<!-- Developer Manifest Preview Section -->
+<section class="wrap section" id="manifest-preview">
+<div class="head reveal-up">
+<div class="kicker">Developer Transparency</div>
+<h2>Manifest V3 Architecture</h2>
+<p>Extoza is built strictly according to modern Chrome extension standards, ensuring high performance, low memory usage, and maximum security.</p>
+</div>
+<div class="reveal-up">
+<div class="code-preview">
+  {<br>
+  &nbsp;&nbsp;<span class="property">"manifest_version"</span>: <span class="string">3</span>,<br>
+  &nbsp;&nbsp;<span class="property">"name"</span>: <span class="string">"Extoza Gmail App & Link Detector"</span>,<br>
+  &nbsp;&nbsp;<span class="property">"version"</span>: <span class="string">"1.0.0"</span>,<br>
+  &nbsp;&nbsp;<span class="property">"permissions"</span>: [<span class="string">"sidePanel"</span>, <span class="string">"activeTab"</span>, <span class="string">"storage"</span>],<br>
+  &nbsp;&nbsp;<span class="property">"action"</span>: {<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;<span class="property">"default_side_panel"</span>: <span class="string">"sidepanel.html"</span><br>
+  &nbsp;&nbsp;}<br>
+  }
+</div>
+</div>
+</section>
+
+<!-- Detailed Privacy & Security Section -->
+<section class="wrap section" id="privacy">
+<div class="privacy reveal-up">
+<div>
+<div class="kicker">Privacy & Security Commitment</div>
+<h2>Strictly secure. Complete data transparency.</h2>
+<p class="muted" style="margin-top: 15px;">We believe your inbox data belongs strictly to you. Extoza operates with a privacy-first architecture:</p>
+<ul style="color: var(--muted); font-size: 13px; padding-left: 20px; line-height: 1.8; margin-top: 15px;">
+<li><b>Local Processing:</b> All connection scans and link analysis occur locally within your browser workspace. No sensitive email content or credentials are ever transmitted to external servers.</li>
+<li><b>No Data Logging:</b> We do not store, log, or monetize your inbox metadata, personal identifiers, or browsing activity.</li>
+<li><b>Permission Transparency:</b> The extension requests only the minimum necessary Chrome permissions required to inspect active tab links and side panel rendering.</li>
+</ul>
+</div>
 <div class="privacylist">
 <div class="privacyitem"><div class="check">✓</div><div><b>Review permissions</b><span>Check Chrome's permission prompt and make sure permissions match the features you expect.</span></div></div>
-<div class="privacyitem"><div class="check">✓</div><div><b>Understand data handling</b><span>Read the publisher's privacy policy before granting access to your account.</span></div></div>
-<div class="privacyitem"><div class="check">✓</div><div><b>Confirm important actions</b><span>Review detected items and confirm deletion or other destructive actions carefully.</span></div></div>
-</div></div></section>
+<div class="privacyitem"><div class="check">✓</div><div><b>Understand data handling</b><span>Read our strict privacy policy before granting access to your workspace.</span></div></div>
+<div class="privacyitem"><div class="check">✓</div><div><b>Confirm important actions</b><span>Review detected items and confirm deletion or disconnection actions carefully.</span></div></div>
+</div>
+</div>
+</section>
 
 <section class="wrap section" id="install"><div class="head reveal-up"><div class="kicker">Quick start</div><h2>Up and running<br><span class="grad">in a few steps.</span></h2><p>For developer-supplied unpacked extensions, Chrome's developer mode may be required.</p></div>
 <div class="install">
@@ -312,28 +363,32 @@ a{color:inherit;text-decoration:none}.wrap{width:min(var(--max),calc(100% - 40px
 <div class="installstep"><em>4</em><div><b>Load unpacked</b><span>Select the extracted folder containing manifest.json, then pin the extension if you like.</span></div></div>
 </div></div></section>
 
-<section class="wrap section" id="faq"><div class="head reveal-up"><div class="kicker">Good to know</div><h2>Frequently asked <span class="grad">questions.</span></h2></div><div class="faq">
-<details class="reveal-up"><summary>Is the extension download included?</summary><p>Add your actual extension ZIP to the downloads folder using the filename shown by the download button. Do not publish the website until that file is included.</p></details>
-<details class="reveal-up"><summary>Does this website access my Gmail?</summary><p>No. This is a static product information website. It does not connect to Gmail or access email data.</p></details>
-<details class="reveal-up"><summary>Is this an official Chrome Web Store install?</summary><p>This page provides a developer ZIP download. If the extension is published on the Chrome Web Store, link to its official listing instead.</p></details>
-<details class="reveal-up"><summary>Can I edit the website?</summary><p>Yes. The website is plain HTML and CSS in index.html. Edit the text, colors, sections, and logo with any code editor.</p></details>
-</div></section>
+<section class="wrap section" id="faq">
+<div class="head reveal-up">
+<div class="kicker">Good to know</div>
+<h2>Frequently asked <span class="grad">questions.</span></h2>
+</div>
+<input type="text" id="faq-search" class="faq-search-box reveal-up" placeholder="Search questions..." onkeyup="filterFAQ()">
+<div class="faq" id="faq-list">
+<details class="reveal-up"><summary>What does the extension actually do?</summary><p>It acts as a secure side panel workspace in Chrome to help you inspect third-party app connections and associated links found within your Gmail environment.</p></details>
+<details class="reveal-up"><summary>Is my email password or data shared?</summary><p>No. Extoza processes everything locally on your device. We do not have access to your passwords, emails, or personal data.</p></details>
+<details class="reveal-up"><summary>How do I install the extension package?</summary><p>Download the ZIP file from this site, extract it, enable Developer Mode in chrome://extensions, and click "Load unpacked" to select the folder.</p></details>
+<details class="reveal-up"><summary>Can I customize or modify the website?</summary><p>Yes. The website is built with clean HTML and CSS. You can edit index.html or update styles using any code editor.</p></details>
+</div>
+</section>
 
-<section class="wrap reveal-up" id="download"><div class="cta"><div class="kicker">Ready when you are</div><h2>A more considered way to review <span class="grad">your connections.</span></h2><p>Download the Chrome extension package from this site. Only install it after checking the package and its permissions.</p><a class="btn download-btn" href="Gmail-App-Link-Detector-1.0.0-upload.zip" download id="download-trigger">Download extension ZIP ↓</a><div class="note">Make sure the ZIP file is uploaded directly to the root of your repository.</div></div></section>
+<section class="wrap reveal-up" id="download"><div class="cta"><div class="kicker">Ready when you are</div><h2>A more considered way to review <span class="grad">your connections.</span></h2><p>Download the Chrome extension package from this site. Only install it after checking the package and its permissions.</p><a class="btn download-btn" href="https://raw.githubusercontent.com/mbabar07/gmail-app-link-detector/main/Gmail-App-Link-Detector-1.0.0-upload.zip" download id="download-trigger">Download extension ZIP ↓</a><div class="note">Make sure the ZIP file is uploaded directly to the root of your repository.</div></div></section>
 </main>
 
 <footer class="wrap footer"><a class="brand anim-link" href="#top"><img src="https://raw.githubusercontent.com/mbabar07/gmail-app-link-detector/main/assets/logo.png" alt="Logo"><span>Extoza <span>&amp; Link Detector</span></span></a><span>Built for clarity · Chrome desktop</span><a href="#privacy" class="anim-link">Privacy &amp; permissions ↑</a></footer>
 
-<!-- Interactive Scripts -->
 <script>
-// Page load fade-in effect
 window.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     document.body.classList.add('loaded');
   }, 50);
 });
 
-// Floating Starry Particles Background Animation
 const canvas = document.getElementById('particles-canvas');
 const ctx = canvas.getContext('2d');
 let particlesArray = [];
@@ -388,7 +443,6 @@ function animateParticles() {
 }
 animateParticles();
 
-// Copy to Clipboard Function
 function copyToClipboard(element, text) {
   navigator.clipboard.writeText(text).then(() => {
     element.classList.add('copied');
@@ -398,7 +452,20 @@ function copyToClipboard(element, text) {
   });
 }
 
-// iOS Style Scroll Observer (Fade In & Fade Out dynamically)
+// FAQ Filter Search
+function filterFAQ() {
+  let input = document.getElementById('faq-search').value.toLowerCase();
+  let details = document.querySelectorAll('#faq-list details');
+  details.forEach(item => {
+    let text = item.innerText.toLowerCase();
+    if(text.includes(input)) {
+      item.style.display = 'block';
+    } else {
+      item.style.display = 'none';
+    }
+  });
+}
+
 const observerOptions = {
   threshold: 0.08,
   rootMargin: "0px 0px -30px 0px"
@@ -418,7 +485,6 @@ document.querySelectorAll('.reveal-up').forEach(el => {
   observer.observe(el);
 });
 
-// Download button click effect & Thank You Popup Modal
 const downloadTrigger = document.getElementById('download-trigger');
 const thankyouModal = document.getElementById('thankyou-modal');
 
@@ -438,7 +504,6 @@ function closeModal() {
   }
 }
 
-// Smooth Black Fade Transition on Navigation/Links
 document.querySelectorAll('a.anim-link').forEach(link => {
   link.addEventListener('click', function(e) {
     const href = this.getAttribute('href');
@@ -458,7 +523,6 @@ document.querySelectorAll('a.anim-link').forEach(link => {
   });
 });
 
-// Mouse Follower Spotlight
 const cursorGlow = document.getElementById('cursor-glow');
 window.addEventListener('mousemove', (e) => {
   cursorGlow.style.left = e.clientX + 'px';
