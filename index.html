@@ -124,7 +124,6 @@ a{color:inherit;text-decoration:none}.wrap{width:min(var(--max),calc(100% - 40px
 }
 .copy-badge.copied .copy-tooltip { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-/* FAQ Search Input */
 .faq-search-box {
   width: 100%; padding: 14px 18px; margin-bottom: 24px; background: #ffffff05; border: 1px solid var(--line); border-radius: 14px; color: var(--text); font-size: 14px; outline: none; transition: 0.3s;
 }
@@ -151,7 +150,6 @@ a{color:inherit;text-decoration:none}.wrap{width:min(var(--max),calc(100% - 40px
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Code Snippet Box */
 .code-preview {
   background: #0d0817; border: 1px solid var(--line); border-radius: 16px; padding: 20px; font-family: monospace; font-size: 12px; color: #a599c2; overflow-x: auto; margin-top: 20px; box-shadow: inset 0 0 20px rgba(0,0,0,0.6);
 }
@@ -373,7 +371,6 @@ a{color:inherit;text-decoration:none}.wrap{width:min(var(--max),calc(100% - 40px
 <details class="reveal-up"><summary>What does the extension actually do?</summary><p>It acts as a secure side panel workspace in Chrome to help you inspect third-party app connections and associated links found within your Gmail environment.</p></details>
 <details class="reveal-up"><summary>Is my email password or data shared?</summary><p>No. Extoza processes everything locally on your device. We do not have access to your passwords, emails, or personal data.</p></details>
 <details class="reveal-up"><summary>How do I install the extension package?</summary><p>Download the ZIP file from this site, extract it, enable Developer Mode in chrome://extensions, and click "Load unpacked" to select the folder.</p></details>
-<details class="reveal-up"><summary>Can I customize or modify the website?</summary><p>Yes. The website is built with clean HTML and CSS. You can edit index.html or update styles using any code editor.</p></details>
 </div>
 </section>
 
@@ -452,7 +449,6 @@ function copyToClipboard(element, text) {
   });
 }
 
-// FAQ Filter Search
 function filterFAQ() {
   let input = document.getElementById('faq-search').value.toLowerCase();
   let details = document.querySelectorAll('#faq-list details');
