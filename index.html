@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0b0714">
 <meta name="description" content="Gmail App & Link Detector — a clearer way to review Gmail-related app connections and links.">
-<title>Gmail App & Link Detector — Your inbox, more in control</title>
+<title>Extoza Gmail App & Link Detector — Your inbox, more in control</title>
 <link rel="icon" href="https://raw.githubusercontent.com/mbabar07/gmail-app-link-detector/main/assets/logo.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,7 +14,6 @@
 :root{--bg:#0b0714;--panel:#151021;--panel2:#1b1229;--text:#f8f4ff;--muted:#b8adc9;--pink:#f044b5;--violet:#8b5cf6;--line:rgba(255,255,255,.11);--max:1160px}
 *{box-sizing:border-box}
 
-/* iOS Style Smooth Momentum Scroll */
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 90px;
@@ -45,6 +44,14 @@ body.loaded { opacity: 1; }
 }
 body.loaded #page-transition-overlay { opacity: 0; }
 
+/* Floating Particles Background Animation */
+#particles-canvas {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
 /* iOS Scroll Reveal Fade & Slide Animation */
 .reveal-up {
   opacity: 0;
@@ -67,7 +74,7 @@ body.loaded #page-transition-overlay { opacity: 0; }
   pointer-events: none;
   transform: translate(-50%, -50%);
   transition: width 0.3s, height 0.3s;
-  z-index: 1;
+  z-index: 2;
 }
 
 body::before {
@@ -79,7 +86,7 @@ body::before {
   pointer-events: none;
 }
 
-a{color:inherit;text-decoration:none}.wrap{width:min(var(--max),calc(100% - 40px));margin:auto;position:relative;z-index:2}
+a{color:inherit;text-decoration:none}.wrap{width:min(var(--max),calc(100% - 40px));margin:auto;position:relative;z-index:3}
 .nav{position:sticky;top:0;z-index:100;border-bottom:1px solid var(--line);background:rgba(11,7,20,.82);backdrop-filter:blur(18px)}
 .navin{height:76px;display:flex;align-items:center;justify-content:space-between;gap:20px}
 .brand{display:flex;align-items:center;gap:11px;font-weight:700;letter-spacing:-.03em;transition:transform .3s}
@@ -114,7 +121,39 @@ a{color:inherit;text-decoration:none}.wrap{width:min(var(--max),calc(100% - 40px
 .modal-close-btn { padding: 10px 24px; border-radius: 99px; background: linear-gradient(110deg, #d6299c, #7339d8); color: #fff; font-weight: 700; border: none; cursor: pointer; transition: .2s; }
 .modal-close-btn:hover { filter: brightness(1.15); transform: translateY(-2px); }
 
-.hero{min-height:680px;display:grid;grid-template-columns:1.05fr .95fr;align-items:center;gap:45px;padding:70px 0 85px;position:relative;z-index:2}
+/* Copy-to-Clipboard Tooltip */
+.copy-badge {
+  background: #f044b520; border: 1px solid #f044b560; color: #ff9cdb; padding: 3px 8px; border-radius: 6px; font-family: monospace; cursor: pointer; transition: 0.2s; position: relative; display: inline-block;
+}
+.copy-badge:hover { background: #f044b540; }
+.copy-tooltip {
+  position: absolute; bottom: 125%; left: 50%; transform: translateX(-50%) translateY(5px); background: #f044b5; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-family: sans-serif; opacity: 0; pointer-events: none; transition: 0.2s; white-space: nowrap;
+}
+.copy-badge.copied .copy-tooltip { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* FAQ Smooth Accordion */
+.faq details {
+  padding: 18px 0; border-bottom: 1px solid var(--line); transition: background 0.3s;
+}
+.faq details summary {
+  cursor: pointer; font-weight: 700; font-size: 14px; display: flex; justify-content: space-between; align-items: center; transition: color 0.3s;
+}
+.faq details summary::-webkit-details-marker { display: none; }
+.faq details summary::after {
+  content: '+'; font-size: 18px; color: var(--pink); transition: transform 0.3s ease;
+}
+.faq details[open] summary::after {
+  transform: rotate(45deg);
+}
+.faq details p {
+  font-size: 13px; color: var(--muted); margin-top: 12px; animation: fadeInText 0.4s ease;
+}
+@keyframes fadeInText {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.hero{min-height:680px;display:grid;grid-template-columns:1.05fr .95fr;align-items:center;gap:45px;padding:70px 0 85px;position:relative;z-index:3}
 .tag{display:inline-flex;align-items:center;gap:9px;padding:7px 12px;border:1px solid #f044b54a;border-radius:99px;background:#f044b511;color:#ffabe3;text-transform:uppercase;letter-spacing:.12em;font-size:10px;font-weight:700;animation: pulseGlow 3s infinite ease-in-out}
 @keyframes pulseGlow { 0%, 100% { border-color: rgba(240,68,181,0.3); } 50% { border-color: rgba(240,68,181,0.8); box-shadow: 0 0 20px rgba(240,68,181,0.2); } }
 .tag i{width:7px;height:7px;background:#ff69c7;border-radius:50%;box-shadow:0 0 12px #ff69c7}
@@ -144,7 +183,7 @@ a{color:inherit;text-decoration:none}.wrap{width:min(var(--max),calc(100% - 40px
 .float.two{bottom:-22px;left:-16px;animation: floatBadge 5s ease-in-out infinite reverse}
 @keyframes floatBadge { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 
-.section{padding:92px 0;position:relative;z-index:2}
+.section{padding:92px 0;position:relative;z-index:3}
 .head{max-width:650px;margin-bottom:38px}
 .kicker{font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:#ff8dd5;font-weight:700}
 .section h2{font:600 clamp(32px,4.4vw,54px)/1.08 "Space Grotesk",sans-serif;letter-spacing:-.06em;margin:12px 0}
@@ -183,11 +222,6 @@ a{color:inherit;text-decoration:none}.wrap{width:min(var(--max),calc(100% - 40px
 .installstep b{font-size:13px;display:block}.installstep span{font-size:11px;color:var(--muted)}
 
 .faq{max-width:820px}
-.faq details{padding:18px 0;border-bottom:1px solid var(--line);transition:.3s}
-.faq details[open]{background:#ffffff03;padding-left:10px;padding-right:10px;border-radius:12px}
-.faq summary{cursor:pointer;font-weight:700;font-size:14px;transition:.3s}
-.faq summary:hover{color:#ff9cdb}
-.faq details p{font-size:13px;color:var(--muted)}
 
 .cta{text-align:center;padding:75px 25px;border:1px solid #f044b540;border-radius:26px;background:radial-gradient(ellipse at 50% 0,#d6299c27,transparent 60%),#ffffff04;position:relative;overflow:hidden}
 .cta::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 50%, rgba(240,68,181,0.1), transparent 70%);opacity:0;transition:.5s}
@@ -206,13 +240,15 @@ a{color:inherit;text-decoration:none}.wrap{width:min(var(--max),calc(100% - 40px
 <!-- Smooth Page Transition Overlay -->
 <div id="page-transition-overlay"></div>
 
+<!-- Floating Starry Particles Background Canvas -->
+<canvas id="particles-canvas"></canvas>
+
 <!-- Thank You Popup Modal -->
 <div id="thankyou-modal">
   <div class="modal-content">
-    <div style="font-size: 40px; margin-bottom: 10px;">🎉</div>
-    <h3>Thank You!</h3>
-    <p>Your extension download has started successfully. Enjoy using Extoza Link Detector!</p>
-    <button class="modal-close-btn" onclick="closeModal()">Awesome, Thanks!</button>
+    <h3>Thank You</h3>
+    <p>Your extension download has started successfully. Enjoy using Extoza Link Detector.</p>
+    <button class="modal-close-btn" onclick="closeModal()">Dismiss</button>
   </div>
 </div>
 
@@ -226,20 +262,20 @@ a{color:inherit;text-decoration:none}.wrap{width:min(var(--max),calc(100% - 40px
 
 <main id="top">
 <section class="wrap hero">
-<div class="reveal-up"><div class="tag"><i></i> A clearer view of your Gmail connections</div>
+<div class="reveal-up"><div class="tag"><i></i> v1.0.0 Stable · Ready to Install</div>
 <h1>Your inbox.<br><span class="grad">Your connections.</span><br>In control.</h1>
 <p>Review connected apps and associated links in a focused workspace designed to make your Gmail-related connections easier to understand.</p>
 <div class="actions"><a class="btn anim-link" href="#download">Download extension ↓</a><a class="btn ghost anim-link" href="#features">Explore features ↘</a></div>
 <div class="note">Chrome desktop · Simple setup · Review before you act</div></div>
 <div class="demo reveal-up" aria-label="Illustrative extension interface">
-<div class="demohead"><span>✉ Connection overview</span><span class="badge">UI PREVIEW</span></div>
+<div class="demohead"><span>Connection overview</span><span class="badge">UI PREVIEW</span></div>
 <div class="label">Workspace snapshot</div><div class="stats"><div class="stat"><b>01</b><span>Account view</span></div><div class="stat"><b>04</b><span>Categories</span></div><div class="stat"><b>↗</b><span>Link review</span></div></div>
 <div class="label">Illustrative detected areas</div>
 <div class="item"><div class="appicon">G</div><div class="itemtext"><b>Google account</b><span>Account overview</span></div><span class="badge">Review</span></div>
 <div class="item"><div class="appicon">◈</div><div class="itemtext"><b>Connected applications</b><span>Organized in one place</span></div><span class="badge">Apps</span></div>
 <div class="item"><div class="appicon">↗</div><div class="itemtext"><b>Associated links</b><span>Review before you act</span></div><span class="badge">Links</span></div>
 <div class="note">Illustration only — not live account data.</div>
-<div class="float one"><strong>✦ Focused by design</strong>Less clutter, more clarity.</div><div class="float two"><strong>⌁ One clear workspace</strong>Review at your own pace.</div>
+<div class="float one"><strong>Focused by design</strong>Less clutter, more clarity.</div><div class="float two"><strong>One clear workspace</strong>Review at your own pace.</div>
 </div>
 </section>
 
@@ -272,7 +308,7 @@ a{color:inherit;text-decoration:none}.wrap{width:min(var(--max),calc(100% - 40px
 <div class="panel reveal-up">
 <div class="installstep"><em>1</em><div><b>Download the extension ZIP</b><span>Use the download button below after the package has been added to this website.</span></div></div>
 <div class="installstep"><em>2</em><div><b>Extract the ZIP file</b><span>Unzip it into a folder on your computer.</span></div></div>
-<div class="installstep"><em>3</em><div><b>Open chrome://extensions</b><span>Turn on Developer mode if you're installing an unpacked developer build.</span></div></div>
+<div class="installstep"><em>3</em><div><b>Open extension manager</b><span>Navigate to <span class="copy-badge" onclick="copyToClipboard(this, 'chrome://extensions')">chrome://extensions<span class="copy-tooltip">Copied</span></span> in your browser.</span></div></div>
 <div class="installstep"><em>4</em><div><b>Load unpacked</b><span>Select the extracted folder containing manifest.json, then pin the extension if you like.</span></div></div>
 </div></div></section>
 
@@ -297,7 +333,72 @@ window.addEventListener('DOMContentLoaded', () => {
   }, 50);
 });
 
-// High-Performance iOS Style Scroll Observer (Fade In & Fade Out dynamically)
+// Floating Starry Particles Background Animation
+const canvas = document.getElementById('particles-canvas');
+const ctx = canvas.getContext('2d');
+let particlesArray = [];
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+class Particle {
+  constructor() {
+    this.x = Math.random() * canvas.width;
+    this.y = Math.random() * canvas.height;
+    this.size = Math.random() * 2 + 0.5;
+    this.speedX = (Math.random() - 0.5) * 0.3;
+    this.speedY = (Math.random() - 0.5) * 0.3;
+    this.opacity = Math.random() * 0.5 + 0.2;
+  }
+  update() {
+    this.x += this.speedX;
+    this.y += this.speedY;
+    if (this.x < 0) this.x = canvas.width;
+    if (this.x > canvas.width) this.x = 0;
+    if (this.y < 0) this.y = canvas.height;
+    if (this.y > canvas.height) this.y = 0;
+  }
+  draw() {
+    ctx.fillStyle = `rgba(240, 68, 181, ${this.opacity})`;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function initParticles() {
+  particlesArray = [];
+  for (let i = 0; i < 45; i++) {
+    particlesArray.push(new Particle());
+  }
+}
+initParticles();
+
+function animateParticles() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particlesArray.forEach(p => {
+    p.update();
+    p.draw();
+  });
+  requestAnimationFrame(animateParticles);
+}
+animateParticles();
+
+// Copy to Clipboard Function
+function copyToClipboard(element, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    element.classList.add('copied');
+    setTimeout(() => {
+      element.classList.remove('copied');
+    }, 1200);
+  });
+}
+
+// iOS Style Scroll Observer (Fade In & Fade Out dynamically)
 const observerOptions = {
   threshold: 0.08,
   rootMargin: "0px 0px -30px 0px"
