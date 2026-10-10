@@ -53,8 +53,8 @@ body.loaded #page-transition-overlay { opacity: 0; }
 
 .reveal-up {
   opacity: 0;
-  transform: translateY(25px);
-  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(35px);
+  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: opacity, transform;
 }
 .reveal-up.active {
@@ -64,9 +64,9 @@ body.loaded #page-transition-overlay { opacity: 0; }
 
 #cursor-glow {
   position: fixed;
-  width: 350px;
-  height: 350px;
-  background: radial-gradient(circle, rgba(240, 68, 181, 0.12) 0%, rgba(139, 92, 246, 0.05) 40%, transparent 70%);
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(240, 68, 181, 0.14) 0%, rgba(139, 92, 246, 0.06) 45%, transparent 75%);
   border-radius: 50%;
   pointer-events: none;
   transform: translate(-50%, -50%);
@@ -74,13 +74,19 @@ body.loaded #page-transition-overlay { opacity: 0; }
   z-index: 2;
 }
 
+/* Cinematic Breathing Loop Background */
 body::before {
   content: '';
   position: absolute;
   top: 0; left: 0; width: 100%; height: 100%;
-  background: radial-gradient(ellipse at 80% 0%,#32103b 0,transparent 35%), radial-gradient(ellipse at 10% 35%,#201044 0,transparent 35%);
+  background: radial-gradient(ellipse at 80% 0%,#3b1248 0,transparent 40%), radial-gradient(ellipse at 10% 35%,#23114d 0,transparent 40%);
   z-index: 0;
   pointer-events: none;
+  animation: bgBreathing 12s infinite alternate ease-in-out;
+}
+@keyframes bgBreathing {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(1.08); opacity: 1; }
 }
 
 a{color:inherit;text-decoration:none}
@@ -152,12 +158,17 @@ a{color:inherit;text-decoration:none}
 }
 .copy-badge.copied .copy-tooltip { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-/* Live Health Status Bar */
+/* Live Health Status Bar with Glow Loop */
 .health-status-bar {
   display: flex; align-items: center; justify-content: center; gap: 8px;
-  background: rgba(240, 68, 181, 0.08); border: 1px solid rgba(240, 68, 181, 0.25);
+  background: rgba(240, 68, 181, 0.08); border: 1px solid rgba(240, 68, 181, 0.3);
   padding: 8px 16px; border-radius: 99px; font-size: 10.5px; color: #ffabeb;
-  margin-top: 16px; width: fit-content; box-shadow: 0 0 20px rgba(240, 68, 181, 0.1);
+  margin-top: 16px; width: fit-content; box-shadow: 0 0 20px rgba(240, 68, 181, 0.15);
+  animation: barGlowPulse 4s infinite alternate ease-in-out;
+}
+@keyframes barGlowPulse {
+  0% { box-shadow: 0 0 10px rgba(240, 68, 181, 0.1); border-color: rgba(240, 68, 181, 0.2); }
+  100% { box-shadow: 0 0 25px rgba(240, 68, 181, 0.35); border-color: rgba(240, 68, 181, 0.6); }
 }
 .health-dot {
   width: 7px; height: 7px; background: #00ff88; border-radius: 50%;
@@ -227,7 +238,13 @@ a{color:inherit;text-decoration:none}
 .tag i{width:4.5px;height:4.5px;background:#ff69c7;border-radius:50%;box-shadow:0 0 6px #ff69c7;flex-shrink:0}
 
 .hero h1{font:600 clamp(28px, 6vw, 64px)/1.04 "Space Grotesk",sans-serif;letter-spacing:-.04em;margin:14px 0;word-break:break-word}
-.grad{background:linear-gradient(100deg,#fff 0%,#ff9edb 45%,#b5a0ff 100%);color:transparent;background-clip:text}
+.grad{background:linear-gradient(100deg,#fff 0%,#ff9edb 35%,#c4b5ff 70%,#ff9edb 100%);background-size:200% auto;color:transparent;background-clip:text;animation: shineGradient 6s linear infinite}
+@keyframes shineGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 .hero p{max-width:540px;color:var(--muted);font-size:13px;line-height:1.65}
 .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
 .note{color:#9387a6;font-size:10px;margin-top:10px}
@@ -254,13 +271,16 @@ a{color:inherit;text-decoration:none}
 .itemtext b{display:block;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .itemtext span{font-size:8.5px;color:var(--muted)}
 
-.float{position:absolute;padding:8px 10px;background:#181024e8;border:1px solid var(--line);border-radius:9px;box-shadow:0 6px 20px #0005;font-size:9.5px;backdrop-filter:blur(10px);display:none}
+.float{position:absolute;padding:8px 10px;background:#181024e8;border:1px solid var(--line);border-radius:9px;box-shadow:0 6px 20px #0005;font-size:9.5px;backdrop-filter:blur(10px);display:none;animation: floatCardLoop 6s infinite ease-in-out}
 @media(min-width: 768px) {
   .float { display: block; }
 }
-.float strong{display:block}
-.float.one{top:-16px;right:-7px}
-.float.two{bottom:-14px;left:-7px}
+.float.one{top:-16px;right:-7px;animation-delay: 0s;}
+.float.two{bottom:-14px;left:-7px;animation-delay: 3s;}
+@keyframes floatCardLoop {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
 
 .section{padding:50px 0;position:relative;z-index:3}
 .head{max-width:650px;margin-bottom:22px}
@@ -277,8 +297,18 @@ a{color:inherit;text-decoration:none}
   .feature { grid-column: span 2; }
   .feature:nth-child(4), .feature:nth-child(5) { grid-column: span 3; }
 }
-.feature{padding:18px;border:1px solid var(--line);border-radius:12px;background:linear-gradient(145deg,#ffffff09,#8b5cf60a);transition:.3s cubic-bezier(0.16, 1, 0.3, 1);position:relative;overflow:hidden}
-.feature:hover{transform:translateY(-3px) scale(1.01);border-color:#f044b5;box-shadow:0 12px 30px rgba(240,68,181,0.15)}
+
+/* Premium 3D Magnetic Tilt Cards */
+.feature{
+  padding:18px;border:1px solid var(--line);border-radius:12px;
+  background:linear-gradient(145deg,rgba(255,255,255,0.06),rgba(139,92,246,0.05));
+  transition:transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+  position:relative;overflow:hidden;transform-style: preserve-perspective;
+}
+.feature:hover{
+  border-color:var(--pink);
+  box-shadow:0 16px 35px rgba(240,68,181,0.18), inset 0 0 15px rgba(240,68,181,0.08);
+}
 .ico{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;background:#f044b518;border:1px solid #f044b52b;color:#ff9cdb;font-size:15px;margin-bottom:12px}
 .feature h3,.step h3{font:600 15px "Space Grotesk";margin:0 0 4px}
 .feature p,.step p{font-size:11.5px;color:var(--muted);margin:0;line-height:1.6}
@@ -289,7 +319,7 @@ a{color:inherit;text-decoration:none}
   .steps { grid-template-columns: repeat(3, 1fr); }
 }
 .step{padding:18px;border-top:1px solid #f044b57a;background:linear-gradient(180deg,#f044b50c,transparent);border-radius:0 0 10px 10px;transition:.3s}
-.step:hover{background:linear-gradient(180deg,#f044b518,transparent);transform:translateY(-2px)}
+.step:hover{background:linear-gradient(180deg,#f044b518,transparent);transform:translateY(-3px)}
 .num{font:600 9.5px "Space Grotesk";color:#ff8dd5;letter-spacing:.09em;margin-bottom:12px}
 
 .privacy{display:grid;grid-template-columns:1fr;gap:20px;align-items:center;padding:clamp(16px, 3vw, 30px);border:1px solid #f044b535;border-radius:16px;background:radial-gradient(ellipse at 0 0,#f044b515,transparent 60%),#ffffff04}
@@ -432,8 +462,7 @@ a{color:inherit;text-decoration:none}
 </div>
 </section>
 
-<section class="section how" id="how"><div class="wrap"><div class="head reveal-up"><div class="kicker">Three simple steps</div> cancellation
-<h2>From install to <span class="grad">overview.</span></h2><p>Start with the package you received from the extension publisher.</p></div>
+<section class="section how" id="how"><div class="wrap"><div class="head reveal-up"><div class="kicker">Three simple steps</div><h2>From install to <span class="grad">overview.</span></h2><p>Start with the package you received from the extension publisher.</p></div>
 <div class="steps">
 <article class="step reveal-up"><div class="num">01 / INSTALL</div><h3>Add to Chrome</h3><p>Download and extract the extension ZIP, then open Chrome's extension manager.</p></article>
 <article class="step reveal-up"><div class="num">02 / CONNECT</div><h3>Open Gmail</h3><p>Sign in to the account you want to review and open the extension from Chrome's toolbar.</p></article>
@@ -554,7 +583,7 @@ class Particle {
 
 function initParticles() {
   particlesArray = [];
-  for (let i = 0; i < 35; i++) {
+  for (let i = 0; i < 40; i++) {
     particlesArray.push(new Particle());
   }
 }
@@ -593,16 +622,14 @@ function filterFAQ() {
 }
 
 const observerOptions = {
-  threshold: 0.05,
-  rootMargin: "0px 0px -20px 0px"
+  threshold: 0.08,
+  rootMargin: "0px 0px -30px 0px"
 };
 
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
       entry.target.classList.add('active');
-    } else {
-      entry.target.classList.remove('active');
     }
   });
 }, observerOptions);
@@ -611,20 +638,37 @@ document.querySelectorAll('.reveal-up').forEach(el => {
   observer.observe(el);
 });
 
+// Magnetic 3D Tilt Effect on Feature Cards
+document.querySelectorAll('.feature').forEach(card => {
+  card.addEventListener('mousemove', (e) => {
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const rotateX = ((y - centerY) / centerY) * -6;
+    const rotateY = ((x - centerX) / centerX) * 6;
+    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-3px)`;
+  });
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)';
+  });
+});
+
 const downloadTrigger = document.getElementById('download-trigger');
-const thankyouModal = document.getElementById('thankyou-modal');
+const thankyouModal =देव document.getElementById('thankyou-modal');
 
 if(downloadTrigger) {
   downloadTrigger.addEventListener('click', function(e) {
     this.classList.add('clicked');
     setTimeout(() => {
-      thankyouModal.classList.add('show');
+      document.getElementById('thankyou-modal').classList.add('show');
     }, 400);
   });
 }
 
 function closeModal() {
-  thankyouModal.classList.remove('show');
+  document.getElementById('thankyou-modal').classList.remove('show');
   if(downloadTrigger) {
     downloadTrigger.classList.remove('clicked');
   }
