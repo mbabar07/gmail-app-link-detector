@@ -2,1550 +2,658 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
-<meta name="theme-color" content="#08050f">
-<meta name="color-scheme" content="dark">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0b0714">
 <meta name="description" content="Extoza Gmail App & Link Detector — a clearer way to review Gmail-related app connections and links securely.">
 <title>Extoza Gmail App & Link Detector — Your inbox, more in control</title>
 <link rel="icon" href="https://raw.githubusercontent.com/mbabar07/gmail-app-link-detector/main/assets/logo.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-/* ============================================================
-   TOKENS
-============================================================ */
-:root{
-  --bg:#08050f;
-  --bg-2:#0d0817;
-  --surface:#120c1e;
-  --surface-2:#170f26;
-  --text:#f7f3ff;
-  --muted:#a89bbd;
-  --muted-2:#7d7192;
-  --pink:#ff4fc3;
-  --pink-soft:#ff9edb;
-  --violet:#8b5cf6;
-  --violet-soft:#b5a0ff;
-  --line:rgba(255,255,255,.085);
-  --line-2:rgba(255,255,255,.14);
-  --glow-pink:rgba(255,79,195,.35);
-  --glow-violet:rgba(139,92,246,.35);
-  --max:1180px;
-  --r-sm:10px;
-  --r-md:16px;
-  --r-lg:22px;
-  --r-xl:28px;
-  --ease:cubic-bezier(.16,1,.3,1);
-  --nav-h:68px;
+:root{--bg:#0b0714;--panel:#151021;--panel2:#1b1229;--text:#f8f4ff;--muted:#b8adc9;--pink:#f044b5;--violet:#8b5cf6;--line:rgba(255,255,255,.11);--max:1160px}
+*{box-sizing:border-box}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 75px;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "DM Sans", sans-serif;
+  line-height: 1.6;
+  overflow-x: hidden;
+  position: relative;
+  opacity: 0;
+  transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  -webkit-font-smoothing: antialiased;
+  width: 100%;
+}
+body.loaded { opacity: 1; }
+
+#page-transition-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: #0b0714;
+  z-index: 99999;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+body.loaded #page-transition-overlay { opacity: 0; }
+
+#particles-canvas {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 1;
 }
 
-*{box-sizing:border-box;margin:0;padding:0}
-
-html{
-  scroll-behavior:smooth;
-  scroll-padding-top:calc(var(--nav-h) + 18px);
-  -webkit-text-size-adjust:100%;
+.reveal-up {
+  opacity: 0;
+  transform: translateY(25px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+.reveal-up.active {
+  opacity: 1;
+  transform: translateY(0);
 }
 
-body{
-  background:var(--bg);
-  color:var(--text);
-  font-family:"DM Sans",system-ui,-apple-system,sans-serif;
-  font-size:15px;
-  line-height:1.65;
-  overflow-x:hidden;
-  position:relative;
-  opacity:0;
-  transition:opacity .9s var(--ease);
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
-  min-height:100vh;
+#cursor-glow {
+  position: fixed;
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, rgba(240, 68, 181, 0.12) 0%, rgba(139, 92, 246, 0.05) 40%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s, height 0.3s;
+  z-index: 2;
 }
-body.loaded{opacity:1}
 
-::selection{background:rgba(255,79,195,.32);color:#fff}
+body::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: radial-gradient(ellipse at 80% 0%,#32103b 0,transparent 35%), radial-gradient(ellipse at 10% 35%,#201044 0,transparent 35%);
+  z-index: 0;
+  pointer-events: none;
+}
 
 a{color:inherit;text-decoration:none}
-img{max-width:100%;display:block}
-button{font-family:inherit}
+.wrap{width:min(var(--max),calc(100% - 24px));margin:auto;position:relative;z-index:3}
 
-/* ============================================================
-   BACKDROP LAYERS
-============================================================ */
-#page-transition-overlay{
-  position:fixed;inset:0;background:var(--bg);
-  z-index:99999;pointer-events:none;opacity:1;
-  transition:opacity .9s var(--ease);
-}
-body.loaded #page-transition-overlay{opacity:0}
+/* Ultra-Compact & Scaled Navbar */
+.nav{position:sticky;top:0;z-index:100;border-bottom:1px solid var(--line);background:rgba(11,7,20,.92);backdrop-filter:blur(16px)}
+.navin{height:54px;display:flex;align-items:center;justify-content:space-between;gap:6px}
+.brand{display:flex;align-items:center;gap:6px;font-weight:700;font-size:11px;letter-spacing:-.03em;min-width:0;flex-shrink:1}
+.brand:hover{transform:scale(1.01)}
+.brand img{width:24px;height:24px;border-radius:5px;object-fit:cover;flex-shrink:0}
+.brand span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.1; }
+.brand span span{color:#f27acb}
 
-.aurora{
-  position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;
-}
-.aurora span{
-  position:absolute;border-radius:50%;filter:blur(90px);opacity:.5;
-  will-change:transform;
-}
-.aurora .a1{
-  width:52vw;height:52vw;max-width:760px;max-height:760px;
-  top:-18vw;right:-12vw;
-  background:radial-gradient(circle at 30% 30%,rgba(255,79,195,.42),transparent 62%);
-  animation:drift1 22s ease-in-out infinite;
-}
-.aurora .a2{
-  width:46vw;height:46vw;max-width:680px;max-height:680px;
-  top:26%;left:-18vw;
-  background:radial-gradient(circle at 60% 40%,rgba(139,92,246,.42),transparent 62%);
-  animation:drift2 26s ease-in-out infinite;
-}
-.aurora .a3{
-  width:40vw;height:40vw;max-width:600px;max-height:600px;
-  bottom:-14vw;right:8vw;
-  background:radial-gradient(circle at 50% 50%,rgba(94,63,214,.34),transparent 65%);
-  animation:drift3 30s ease-in-out infinite;
-}
-@keyframes drift1{
-  0%,100%{transform:translate3d(0,0,0) scale(1)}
-  50%{transform:translate3d(-6%,7%,0) scale(1.12)}
-}
-@keyframes drift2{
-  0%,100%{transform:translate3d(0,0,0) scale(1)}
-  50%{transform:translate3d(9%,-6%,0) scale(1.08)}
-}
-@keyframes drift3{
-  0%,100%{transform:translate3d(0,0,0) scale(1)}
-  50%{transform:translate3d(-7%,-8%,0) scale(1.14)}
-}
+.links{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:11px;flex-shrink:0}
+.links a:hover{color:white}
 
-.grid-overlay{
-  position:fixed;inset:0;z-index:0;pointer-events:none;
-  background-image:
-    linear-gradient(rgba(255,255,255,.028) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(255,255,255,.028) 1px,transparent 1px);
-  background-size:64px 64px;
-  mask-image:radial-gradient(ellipse 90% 65% at 50% 0%,#000 0%,transparent 78%);
-  -webkit-mask-image:radial-gradient(ellipse 90% 65% at 50% 0%,#000 0%,transparent 78%);
-}
-
-.grain{
-  position:fixed;inset:0;z-index:2;pointer-events:none;opacity:.032;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-#particles-canvas{
-  position:fixed;inset:0;width:100%;height:100%;
-  pointer-events:none;z-index:1;opacity:.75;
-}
-
-#cursor-glow{
-  position:fixed;width:420px;height:420px;border-radius:50%;
-  background:radial-gradient(circle,rgba(255,79,195,.10) 0%,rgba(139,92,246,.06) 42%,transparent 70%);
-  pointer-events:none;transform:translate(-50%,-50%);
-  z-index:1;transition:opacity .4s;
-}
-@media (hover:none),(max-width:860px){#cursor-glow{display:none}}
-
-#scroll-progress{
-  position:fixed;top:0;left:0;height:2px;width:0%;
-  background:linear-gradient(90deg,var(--pink),var(--violet),var(--pink-soft));
-  z-index:9999;box-shadow:0 0 14px var(--glow-pink);
-  transition:width .1s linear;
-}
-
-.wrap{
-  width:min(var(--max),calc(100% - 40px));
-  margin-inline:auto;position:relative;z-index:3;
-}
-@media(max-width:600px){.wrap{width:calc(100% - 32px)}}
-
-.reveal-up{
-  opacity:0;transform:translateY(28px);
-  transition:opacity .9s var(--ease),transform .9s var(--ease);
-  will-change:opacity,transform;
-}
-.reveal-up.active{opacity:1;transform:none}
-
-/* ============================================================
-   NAVBAR
-============================================================ */
-.nav{
-  position:sticky;top:0;z-index:100;
-  border-bottom:1px solid transparent;
-  background:rgba(8,5,15,.55);
-  backdrop-filter:blur(18px) saturate(160%);
-  -webkit-backdrop-filter:blur(18px) saturate(160%);
-  transition:border-color .4s,background .4s;
-}
-.nav.scrolled{
-  border-bottom-color:var(--line);
-  background:rgba(8,5,15,.82);
-}
-.navin{
-  height:var(--nav-h);
-  display:flex;align-items:center;justify-content:space-between;gap:16px;
-}
-.brand{
-  display:flex;align-items:center;gap:10px;
-  font-family:"Space Grotesk",sans-serif;
-  font-weight:600;font-size:15px;letter-spacing:-.02em;
-  transition:opacity .3s;
-}
-.brand:hover{opacity:.85}
-.brand img{
-  width:32px;height:32px;border-radius:9px;object-fit:cover;
-  border:1px solid var(--line-2);
-  box-shadow:0 0 0 3px rgba(255,79,195,.07),0 6px 18px rgba(0,0,0,.5);
-}
-.brand .accent{
-  background:linear-gradient(100deg,var(--pink),var(--violet-soft));
-  -webkit-background-clip:text;background-clip:text;color:transparent;
-}
-
-.links{display:flex;align-items:center;gap:28px}
-.links a{
-  font-size:13.5px;color:var(--muted);font-weight:500;
-  transition:color .25s;position:relative;
-}
-.links a:not(.btn)::after{
-  content:'';position:absolute;left:0;bottom:-6px;height:1px;width:0;
-  background:linear-gradient(90deg,var(--pink),var(--violet));
-  transition:width .35s var(--ease);
-}
-.links a:not(.btn):hover{color:var(--text)}
-.links a:not(.btn):hover::after{width:100%}
-
-/* ============================================================
-   BUTTONS
-============================================================ */
 .btn{
-  position:relative;overflow:hidden;
-  display:inline-flex;align-items:center;justify-content:center;gap:8px;
-  padding:13px 24px;border-radius:999px;
-  font-weight:600;font-size:13.5px;line-height:1;letter-spacing:.01em;
-  color:#fff;border:1px solid rgba(255,158,219,.32);
-  background:linear-gradient(110deg,#e0299f 0%,#a13be0 48%,#6f3ae0 100%);
-  box-shadow:0 8px 26px -8px var(--glow-pink),inset 0 1px 0 rgba(255,255,255,.22);
-  transition:transform .3s var(--ease),box-shadow .3s var(--ease),filter .3s;
-  cursor:pointer;white-space:nowrap;
+  display:inline-flex;align-items:center;justify-content:center;gap:4px;
+  padding:5px 10px;border-radius:99px;
+  background:linear-gradient(110deg,#d6299c,#7339d8);color:#fff;
+  font-weight:700;font-size:10px;line-height:1;
+  border:1px solid #f27acb;box-shadow:0 3px 12px rgba(214, 41, 156, 0.22);
+  transition:.25s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space:nowrap;flex-shrink:0;height:28px;
 }
-.btn::after{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.42) 50%,transparent 70%);
-  transform:translateX(-130%);
-  transition:transform .8s var(--ease);
-}
-.btn:hover::after{transform:translateX(130%)}
-.btn:hover{
-  transform:translateY(-2px);
-  box-shadow:0 16px 40px -10px var(--glow-pink),inset 0 1px 0 rgba(255,255,255,.3);
-  filter:brightness(1.06);
-}
-.btn:active{transform:translateY(0) scale(.985)}
+.btn:hover{transform:translateY(-1px);filter:brightness(1.15);box-shadow:0 6px 20px rgba(214, 41, 156, 0.35)}
+.btn.ghost{background:#ffffff08;border-color:var(--line);box-shadow:none;height:auto;padding:8px 14px;font-size:11px}.btn.ghost:hover{background:#ffffff12;border-color:#f044b57a}
 
-.btn.ghost{
-  background:rgba(255,255,255,.045);
-  border-color:var(--line-2);
-  box-shadow:none;color:var(--text);
-  backdrop-filter:blur(8px);
-}
-.btn.ghost:hover{
-  background:rgba(255,255,255,.09);
-  border-color:rgba(255,79,195,.45);
-  box-shadow:0 10px 30px -12px var(--glow-pink);
-}
-
-.btn.sm{padding:9px 18px;font-size:12.5px}
-.nav .btn{padding:10px 20px;font-size:12.5px}
-
-/* ============================================================
-   HERO
-============================================================ */
-.hero{
-  display:grid;grid-template-columns:1fr;align-items:center;
-  gap:56px;padding:72px 0 88px;position:relative;
-}
-@media(min-width:960px){
-  .hero{grid-template-columns:1.06fr .94fr;gap:64px;padding:96px 0 118px}
-}
-
-.tag{
-  display:inline-flex;align-items:center;gap:9px;
-  padding:7px 15px 7px 12px;border-radius:999px;
-  border:1px solid rgba(255,79,195,.28);
-  background:linear-gradient(100deg,rgba(255,79,195,.13),rgba(139,92,246,.10));
-  color:#ffc2ec;font-size:11px;font-weight:600;
-  letter-spacing:.11em;text-transform:uppercase;
-  backdrop-filter:blur(8px);
-  box-shadow:0 0 26px -6px var(--glow-pink),inset 0 1px 0 rgba(255,255,255,.07);
-}
-.tag i{
-  width:6px;height:6px;border-radius:50%;background:#ff69c7;flex-shrink:0;
-  box-shadow:0 0 10px #ff69c7;
-  animation:blink 2.2s ease-in-out infinite;
-}
-@keyframes blink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.82)}}
-
-.hero h1{
-  font-family:"Space Grotesk",sans-serif;
-  font-weight:600;
-  font-size:clamp(38px,7.2vw,74px);
-  line-height:1.02;
-  letter-spacing:-.045em;
-  margin:24px 0 22px;
-}
-.grad{
-  background:linear-gradient(100deg,#fff 0%,#ffb3e6 30%,#c4a8ff 62%,#fff 100%);
-  background-size:220% auto;
-  -webkit-background-clip:text;background-clip:text;color:transparent;
-  animation:shine 7s linear infinite;
-}
-@keyframes shine{to{background-position:220% center}}
-
-.hero > div:first-child p{
-  max-width:560px;color:var(--muted);font-size:16px;line-height:1.72;
-}
-
-.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:32px}
-
-.health-status-bar{
-  display:inline-flex;align-items:center;gap:10px;
-  margin-top:26px;padding:9px 18px;border-radius:999px;
-  background:rgba(255,255,255,.035);
-  border:1px solid var(--line-2);
-  font-size:12.5px;color:#cbbfe0;font-weight:500;
-  backdrop-filter:blur(8px);
-}
-.health-dot{
-  width:7px;height:7px;border-radius:50%;background:#2fe08a;
-  box-shadow:0 0 12px #2fe08a;flex-shrink:0;
-  animation:pulseHealth 2.2s ease-in-out infinite;
-}
-@keyframes pulseHealth{
-  0%,100%{opacity:1;transform:scale(1)}
-  50%{opacity:.35;transform:scale(.8)}
-}
-
-.note{color:var(--muted-2);font-size:12.5px;margin-top:16px}
-
-.demo-wrap{position:relative;perspective:1400px}
-
-.demo{
-  position:relative;padding:20px;border-radius:var(--r-lg);
-  background:linear-gradient(155deg,rgba(30,18,48,.92),rgba(13,8,23,.96));
-  border:1px solid var(--line-2);
-  box-shadow:
-    0 40px 90px -30px rgba(0,0,0,.9),
-    0 0 70px -30px var(--glow-pink),
-    inset 0 1px 0 rgba(255,255,255,.07);
-  transform:rotateY(-5deg) rotateX(2deg);
-  transition:transform .7s var(--ease),box-shadow .7s var(--ease);
-  will-change:transform;
-}
-@media(max-width:959px){.demo{transform:none}}
-.demo:hover{
-  transform:rotateY(0deg) rotateX(0deg) translateY(-4px);
-  box-shadow:
-    0 50px 110px -30px rgba(0,0,0,.95),
-    0 0 90px -26px var(--glow-pink),
-    inset 0 1px 0 rgba(255,255,255,.1);
-}
-
-.demo-wrap::before{
-  content:'';position:absolute;inset:-1px;border-radius:calc(var(--r-lg) + 2px);
-  background:conic-gradient(from 0deg,transparent 0%,rgba(255,79,195,.65) 12%,transparent 26%,transparent 50%,rgba(139,92,246,.6) 64%,transparent 78%);
-  z-index:-1;filter:blur(16px);opacity:.55;
-  animation:spin 9s linear infinite;
-}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-.demohead{
-  display:flex;justify-content:space-between;align-items:center;
-  padding-bottom:14px;border-bottom:1px solid var(--line);
-  font-weight:600;font-size:13.5px;letter-spacing:-.01em;
-}
-.badge{
-  font-size:10.5px;font-weight:600;letter-spacing:.07em;
-  padding:4px 10px;border-radius:999px;
-  color:#ffb5e4;border:1px solid rgba(255,79,195,.3);
-  background:rgba(255,79,195,.1);white-space:nowrap;
-}
-
-.label{
-  font-size:10.5px;text-transform:uppercase;letter-spacing:.13em;
-  color:var(--muted-2);font-weight:600;margin:18px 0 10px;
-}
-
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
-.stat{
-  padding:14px 10px;border-radius:var(--r-sm);text-align:center;
-  border:1px solid var(--line);background:rgba(255,255,255,.032);
-  transition:background .3s,border-color .3s,transform .3s var(--ease);
-}
-.stat:hover{
-  background:rgba(255,79,195,.07);
-  border-color:rgba(255,79,195,.32);
-  transform:translateY(-2px);
-}
-.stat b{
-  display:block;font-family:"Space Grotesk",sans-serif;
-  font-size:22px;font-weight:600;letter-spacing:-.03em;
-  background:linear-gradient(120deg,#fff,#ffb3e6);
-  -webkit-background-clip:text;background-clip:text;color:transparent;
-}
-.stat span{font-size:10.5px;color:var(--muted-2);font-weight:500}
-
-.item{
-  display:flex;align-items:center;gap:12px;
-  padding:12px;margin-top:8px;border-radius:var(--r-sm);
-  border:1px solid var(--line);background:rgba(255,255,255,.03);
-  transition:background .3s,border-color .3s,transform .3s var(--ease);
-}
-.item:hover{
-  background:rgba(255,255,255,.06);
-  border-color:rgba(255,79,195,.32);
-  transform:translateX(3px);
-}
-.appicon{
-  width:34px;height:34px;border-radius:9px;flex-shrink:0;
-  display:grid;place-items:center;
-  font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:14px;
-  background:linear-gradient(140deg,rgba(139,92,246,.28),rgba(255,79,195,.18));
-  border:1px solid rgba(255,255,255,.1);
-  color:#ffb3e6;
-}
-.itemtext{flex:1;min-width:0}
-.itemtext b{display:block;font-size:13px;font-weight:600;letter-spacing:-.01em}
-.itemtext span{font-size:11.5px;color:var(--muted-2)}
-
-.float{
-  position:absolute;padding:11px 15px;border-radius:12px;
-  background:rgba(23,15,38,.9);border:1px solid var(--line-2);
-  backdrop-filter:blur(14px);
-  box-shadow:0 20px 44px -16px rgba(0,0,0,.9);
-  font-size:11.5px;color:var(--muted);line-height:1.45;
-  animation:floaty 6s ease-in-out infinite;
-}
-.float strong{display:block;color:var(--text);font-size:12.5px;font-weight:600;margin-bottom:2px}
-.float.one{top:-20px;right:-16px}
-.float.two{bottom:-20px;left:-16px;animation-delay:-3s}
-@keyframes floaty{
-  0%,100%{transform:translateY(0)}
-  50%{transform:translateY(-9px)}
-}
-@media(max-width:959px){.float{display:none}}
-
-.section{padding:96px 0;position:relative;z-index:3}
-@media(max-width:700px){.section{padding:68px 0}}
-
-.head{max-width:700px;margin-bottom:52px}
-.kicker{
-  display:inline-block;
-  font-size:11px;font-weight:700;letter-spacing:.17em;text-transform:uppercase;
-  color:#ff8dd5;margin-bottom:14px;
-}
-.section h2{
-  font-family:"Space Grotesk",sans-serif;font-weight:600;
-  font-size:clamp(29px,4.6vw,50px);line-height:1.06;letter-spacing:-.04em;
-}
-.head p{color:var(--muted);font-size:16px;margin-top:18px;max-width:640px;line-height:1.7}
-
-.features{display:grid;grid-template-columns:1fr;gap:16px}
-@media(min-width:640px){.features{grid-template-columns:repeat(2,1fr)}}
-@media(min-width:1000px){
-  .features{grid-template-columns:repeat(6,1fr)}
-  .features .feature{grid-column:span 2}
-  .features .feature:nth-child(4),
-  .features .feature:nth-child(5){grid-column:span 3}
-}
-
-.feature{
-  position:relative;overflow:hidden;
-  padding:30px 26px;border-radius:var(--r-md);
-  border:1px solid var(--line);
-  background:linear-gradient(150deg,rgba(255,255,255,.045),rgba(139,92,246,.028));
-  transition:transform .45s var(--ease),border-color .45s,box-shadow .45s;
-}
-.feature::before{
-  content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;
-  background:linear-gradient(140deg,rgba(255,79,195,.85),rgba(139,92,246,.5),rgba(255,79,195,.15));
-  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
-  -webkit-mask-composite:xor;mask-composite:exclude;
-  opacity:0;transition:opacity .45s;pointer-events:none;
-}
-.feature::after{
-  content:'';position:absolute;inset:0;border-radius:inherit;
-  background:radial-gradient(340px circle at var(--mx,50%) var(--my,50%),rgba(255,79,195,.12),transparent 62%);
-  opacity:0;transition:opacity .45s;pointer-events:none;
-}
-.feature:hover{
-  transform:translateY(-5px);
-  box-shadow:0 26px 60px -26px rgba(255,79,195,.5);
-}
-.feature:hover::before,.feature:hover::after{opacity:1}
-
-.ico{
-  width:46px;height:46px;border-radius:13px;
-  display:grid;place-items:center;font-size:20px;margin-bottom:20px;
-  background:linear-gradient(140deg,rgba(255,79,195,.17),rgba(139,92,246,.13));
-  border:1px solid rgba(255,79,195,.24);
-  color:#ffa4dd;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.09),0 0 26px -8px var(--glow-pink);
-  transition:transform .45s var(--ease);
-}
-.feature:hover .ico{transform:scale(1.08) rotate(-4deg)}
-
-.feature h3{
-  font-family:"Space Grotesk",sans-serif;
-  font-size:18px;font-weight:600;letter-spacing:-.02em;margin-bottom:9px;
-}
-.feature p{font-size:14px;color:var(--muted);line-height:1.68}
-
-.table-shell{
-  border-radius:var(--r-md);overflow:hidden;
-  border:1px solid var(--line);
-  background:rgba(18,12,30,.6);
-  box-shadow:0 30px 70px -40px rgba(0,0,0,.9);
-}
-.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
-.comparison-table{
-  width:100%;min-width:640px;border-collapse:collapse;
-}
-.comparison-table th,
-.comparison-table td{
-  padding:19px 24px;text-align:left;font-size:14px;
-  border-bottom:1px solid var(--line);
-}
-.comparison-table th{
-  font-family:"Space Grotesk",sans-serif;font-weight:600;
-  font-size:12px;letter-spacing:.11em;text-transform:uppercase;
-  color:var(--muted);background:rgba(255,255,255,.03);
-}
-.comparison-table th:nth-child(2){
-  color:#ffb3e6;
-  background:linear-gradient(180deg,rgba(255,79,195,.13),rgba(255,79,195,.05));
-}
-.comparison-table td:first-child{color:var(--text);font-weight:500}
-.comparison-table td:nth-child(2){
-  color:#ffb3e6;font-weight:600;
-  background:rgba(255,79,195,.045);
-}
-.comparison-table td:nth-child(3){color:var(--muted-2)}
-.comparison-table tbody tr{transition:background .3s}
-.comparison-table tbody tr:hover{background:rgba(255,255,255,.028)}
-.comparison-table tbody tr:last-child td{border-bottom:none}
-
-.how{
-  background:linear-gradient(180deg,transparent,rgba(33,16,51,.42) 45%,transparent);
-  border-top:1px solid rgba(255,255,255,.05);
-  border-bottom:1px solid rgba(255,255,255,.05);
-}
-.steps{display:grid;grid-template-columns:1fr;gap:18px}
-@media(min-width:800px){.steps{grid-template-columns:repeat(3,1fr)}}
-
-.step{
-  position:relative;padding:34px 26px;border-radius:var(--r-md);
-  border:1px solid var(--line);
-  background:linear-gradient(180deg,rgba(255,79,195,.055),rgba(255,255,255,.015));
-  transition:transform .45s var(--ease),border-color .45s,background .45s;
-  overflow:hidden;
-}
-.step::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(255,79,195,.8),transparent);
-  opacity:.55;transition:opacity .45s;
-}
-.step:hover{
-  transform:translateY(-5px);
-  border-color:rgba(255,79,195,.32);
-  background:linear-gradient(180deg,rgba(255,79,195,.1),rgba(255,255,255,.02));
-}
-.step:hover::before{opacity:1}
-
-.num{
-  font-family:"Space Grotesk",sans-serif;font-size:12px;font-weight:600;
-  letter-spacing:.16em;color:#ff8dd5;margin-bottom:16px;
-}
-.step h3{
-  font-family:"Space Grotesk",sans-serif;
-  font-size:19px;font-weight:600;letter-spacing:-.02em;margin-bottom:9px;
-}
-.step p{font-size:14px;color:var(--muted);line-height:1.68}
-
-.code-preview{
-  position:relative;
-  background:linear-gradient(160deg,#0c0716,#100a1c);
-  border:1px solid var(--line-2);border-radius:var(--r-md);
-  padding:24px 26px;overflow-x:auto;
-  font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
-  font-size:13px;line-height:2;color:#9a8eb5;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 26px 60px -34px rgba(0,0,0,.95);
-}
-.code-preview::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(255,79,195,.6),rgba(139,92,246,.6),transparent);
-}
-.code-preview .property{color:#7dd3fc}
-.code-preview .string{color:#ffb3e6}
-.code-preview .pun{color:#6b6080}
-
-.privacy{
-  display:grid;grid-template-columns:1fr;gap:44px;align-items:center;
-  padding:clamp(30px,4.2vw,58px);border-radius:var(--r-xl);
-  border:1px solid rgba(255,79,195,.2);
-  background:
-    radial-gradient(ellipse 70% 100% at 0% 0%,rgba(255,79,195,.13),transparent 58%),
-    radial-gradient(ellipse 60% 90% at 100% 100%,rgba(139,92,246,.13),transparent 60%),
-    rgba(255,255,255,.022);
-  position:relative;overflow:hidden;
-  box-shadow:0 40px 90px -50px rgba(255,79,195,.5);
-}
-@media(min-width:960px){.privacy{grid-template-columns:.9fr 1.1fr;gap:56px}}
-
-.privacy h2{margin-top:6px}
-.privacy .muted{color:var(--muted);font-size:15px;margin-top:16px;line-height:1.72}
-.privacy ul{
-  list-style:none;margin-top:22px;display:grid;gap:14px;
-}
-.privacy ul li{
-  position:relative;padding-left:26px;
-  font-size:14px;color:var(--muted);line-height:1.7;
-}
-.privacy ul li::before{
-  content:'';position:absolute;left:0;top:9px;
-  width:9px;height:9px;border-radius:50%;
-  background:linear-gradient(140deg,var(--pink),var(--violet));
-  box-shadow:0 0 12px var(--glow-pink);
-}
-.privacy ul li b{color:var(--text);font-weight:600}
-
-.privacylist{display:grid;gap:12px}
-.privacyitem{
-  display:flex;gap:14px;padding:18px 20px;border-radius:var(--r-sm);
-  border:1px solid var(--line);background:rgba(255,255,255,.032);
-  transition:background .35s,border-color .35s,transform .35s var(--ease);
-}
-.privacyitem:hover{
-  background:rgba(255,255,255,.062);
-  border-color:rgba(255,79,195,.32);
-  transform:translateX(4px);
-}
-.check{
-  flex:0 0 26px;width:26px;height:26px;border-radius:8px;
-  display:grid;place-items:center;font-size:13px;font-weight:700;
-  background:linear-gradient(140deg,rgba(255,79,195,.22),rgba(139,92,246,.16));
-  border:1px solid rgba(255,79,195,.3);
-  color:#ffa4dd;
-}
-.privacyitem b{display:block;font-size:14px;font-weight:600;margin-bottom:3px}
-.privacyitem span{font-size:13px;color:var(--muted-2);line-height:1.6}
-
-.install{display:grid;grid-template-columns:1fr;gap:20px}
-@media(min-width:960px){.install{grid-template-columns:.82fr 1.18fr;gap:22px}}
-
-.panel{
-  padding:30px 26px;border-radius:var(--r-md);
-  border:1px solid var(--line);background:rgba(255,255,255,.03);
-  transition:border-color .35s,background .35s;
-}
-.panel:hover{border-color:var(--line-2);background:rgba(255,255,255,.045)}
-.panel h3{
-  font-family:"Space Grotesk",sans-serif;font-size:19px;
-  font-weight:600;letter-spacing:-.02em;margin-bottom:12px;
-}
-.panel .muted{color:var(--muted);font-size:14px;line-height:1.7}
-
-.installstep{
-  display:flex;gap:16px;padding:18px 0;
-  border-bottom:1px solid rgba(255,255,255,.07);
-}
-.installstep:last-child{border-bottom:none;padding-bottom:0}
-.installstep:first-child{padding-top:0}
-.installstep em{
-  font-style:normal;flex:0 0 30px;width:30px;height:30px;
-  display:grid;place-items:center;border-radius:9px;
-  font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:13px;
-  background:linear-gradient(140deg,rgba(255,79,195,.2),rgba(139,92,246,.14));
-  border:1px solid rgba(255,79,195,.28);
-  color:#ffa4dd;
-}
-.installstep b{display:block;font-size:14.5px;font-weight:600;margin-bottom:3px}
-.installstep span{font-size:13px;color:var(--muted-2);line-height:1.62}
-
-.copy-badge{
-  display:inline-block;
-  background:rgba(255,79,195,.13);
-  border:1px solid rgba(255,79,195,.34);
-  color:#ffb3e6;padding:2px 8px;border-radius:6px;
-  font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;
-  cursor:pointer;transition:background .25s,transform .25s;
-  position:relative;word-break:break-all;
-}
-.copy-badge:hover{background:rgba(255,79,195,.26);transform:translateY(-1px)}
-.copy-tooltip{
-  position:absolute;bottom:135%;left:50%;
-  transform:translateX(-50%) translateY(5px);
-  background:linear-gradient(110deg,#e0299f,#7c3aed);
-  color:#fff;padding:4px 10px;border-radius:6px;
-  font-family:"DM Sans",sans-serif;font-size:11px;font-weight:600;
-  opacity:0;pointer-events:none;transition:.28s var(--ease);white-space:nowrap;
-}
-.copy-badge.copied .copy-tooltip{opacity:1;transform:translateX(-50%) translateY(0)}
-
-.faq-wrap{max-width:820px;margin-inline:auto}
-.faq-search-box{
-  width:100%;padding:15px 20px;margin-bottom:22px;
-  background:rgba(255,255,255,.035);
-  border:1px solid var(--line);border-radius:12px;
-  color:var(--text);font-size:14px;font-family:inherit;outline:none;
-  transition:border-color .3s,box-shadow .3s,background .3s;
-}
-.faq-search-box::placeholder{color:var(--muted-2)}
-.faq-search-box:focus{
-  border-color:rgba(255,79,195,.5);
-  background:rgba(255,255,255,.055);
-  box-shadow:0 0 0 4px rgba(255,79,195,.1);
-}
-
-.faq details{
-  border-bottom:1px solid var(--line);
-  transition:background .3s;
-}
-.faq details[open]{background:rgba(255,255,255,.018)}
-.faq summary{
-  cursor:pointer;list-style:none;
-  display:flex;justify-content:space-between;align-items:center;gap:20px;
-  padding:22px 4px;
-  font-family:"Space Grotesk",sans-serif;
-  font-size:16.5px;font-weight:600;letter-spacing:-.015em;
-  transition:color .3s;
-}
-.faq summary::-webkit-details-marker{display:none}
-.faq summary:hover{color:#ffb3e6}
-.faq summary::after{
-  content:'';flex-shrink:0;
-  width:22px;height:22px;border-radius:50%;
-  background:
-    linear-gradient(rgba(255,79,195,.9),rgba(255,79,195,.9)) center/10px 1.5px no-repeat,
-    linear-gradient(rgba(255,79,195,.9),rgba(255,79,195,.9)) center/1.5px 10px no-repeat,
-    rgba(255,79,195,.1);
-  border:1px solid rgba(255,79,195,.28);
-  transition:transform .4s var(--ease),background .4s;
-}
-.faq details[open] summary::after{
-  transform:rotate(135deg);
-  background:
-    linear-gradient(#fff,#fff) center/10px 1.5px no-repeat,
-    linear-gradient(#fff,#fff) center/1.5px 10px no-repeat,
-    rgba(255,79,195,.35);
-}
-.faq details p{
-  padding:0 4px 24px;font-size:14.5px;color:var(--muted);line-height:1.75;
-  max-width:70ch;
-  animation:fadeInText .4s var(--ease);
-}
-@keyframes fadeInText{
-  from{opacity:0;transform:translateY(-6px)}
-  to{opacity:1;transform:none}
-}
-
-.cta{
-  position:relative;overflow:hidden;text-align:center;
-  padding:clamp(48px,7vw,86px) clamp(24px,5vw,60px);
-  border-radius:var(--r-xl);
-  border:1px solid rgba(255,79,195,.24);
-  background:
-    radial-gradient(ellipse 60% 100% at 50% 0%,rgba(224,41,159,.22),transparent 62%),
-    radial-gradient(ellipse 70% 90% at 50% 110%,rgba(124,58,237,.2),transparent 62%),
-    rgba(255,255,255,.022);
-  box-shadow:0 50px 110px -60px rgba(255,79,195,.75);
-}
-.cta::before{
-  content:'';position:absolute;inset:0;
-  background-image:
-    linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);
-  background-size:48px 48px;
-  mask-image:radial-gradient(ellipse 70% 80% at 50% 50%,#000,transparent 75%);
-  -webkit-mask-image:radial-gradient(ellipse 70% 80% at 50% 50%,#000,transparent 75%);
-  pointer-events:none;
-}
-.cta > *{position:relative;z-index:1}
-.cta h2{
-  max-width:720px;margin:16px auto 20px;
-  font-family:"Space Grotesk",sans-serif;font-weight:600;
-  font-size:clamp(30px,5vw,52px);line-height:1.06;letter-spacing:-.04em;
-}
-.cta p{
-  max-width:520px;margin:0 auto 34px;
-  color:var(--muted);font-size:15.5px;line-height:1.72;
-}
-.cta .note{margin-top:20px}
-
-.footer{
-  display:flex;flex-direction:column;gap:20px;align-items:center;text-align:center;
-  padding:38px 0 46px;margin-top:60px;
-  border-top:1px solid var(--line);
-  font-size:13.5px;color:var(--muted-2);
-}
-@media(min-width:720px){
-  .footer{flex-direction:row;justify-content:space-between;text-align:left}
-}
-.footer .brand{font-size:14px}
-.footer .brand img{width:28px;height:28px}
-.footer a:not(.brand){transition:color .3s}
-.footer a:not(.brand):hover{color:#ffb3e6}
-
-#to-top{
-  position:fixed;right:22px;bottom:22px;z-index:200;
-  width:46px;height:46px;border-radius:50%;
-  display:grid;place-items:center;
-  background:rgba(23,15,38,.82);
-  border:1px solid var(--line-2);
-  color:#ffb3e6;font-size:17px;cursor:pointer;
-  backdrop-filter:blur(14px);
-  box-shadow:0 14px 34px -14px rgba(0,0,0,.9);
-  opacity:0;pointer-events:none;transform:translateY(14px) scale(.9);
-  transition:opacity .4s var(--ease),transform .4s var(--ease),border-color .3s,background .3s;
-}
-#to-top.show{opacity:1;pointer-events:auto;transform:none}
-#to-top:hover{
-  border-color:rgba(255,79,195,.5);
-  background:rgba(255,79,195,.14);
-  transform:translateY(-3px);
-}
-
-#thankyou-modal{
-  position:fixed;inset:0;z-index:999999;
-  display:flex;align-items:center;justify-content:center;padding:24px;
-  background:rgba(8,5,15,.82);
-  backdrop-filter:blur(12px);
-  opacity:0;pointer-events:none;
-  transition:opacity .45s var(--ease);
-}
-#thankyou-modal.show{opacity:1;pointer-events:auto}
-
-.modal-content{
-  position:relative;overflow:hidden;
-  width:100%;max-width:420px;
-  padding:40px 32px 34px;border-radius:var(--r-lg);
-  text-align:center;
-  background:linear-gradient(160deg,#241436,#120c1e);
-  border:1px solid rgba(255,79,195,.3);
-  box-shadow:0 50px 100px -40px rgba(255,79,195,.6),inset 0 1px 0 rgba(255,255,255,.08);
-  transform:translateY(22px) scale(.96);
-  transition:transform .5s var(--ease);
-}
-#thankyou-modal.show .modal-content{transform:none}
-.modal-content::before{
-  content:'';position:absolute;top:-60%;left:-20%;width:140%;height:100%;
-  background:radial-gradient(ellipse at 50% 50%,rgba(255,79,195,.22),transparent 66%);
-  pointer-events:none;
-}
-.modal-icon{
-  position:relative;
-  width:60px;height:60px;margin:0 auto 20px;border-radius:18px;
-  display:grid;place-items:center;font-size:26px;
-  background:linear-gradient(140deg,rgba(255,79,195,.24),rgba(139,92,246,.18));
-  border:1px solid rgba(255,79,195,.36);
-  color:#ffa4dd;
-  box-shadow:0 0 40px -8px var(--glow-pink);
-  animation:popIn .6s var(--ease) both .12s;
-}
-@keyframes popIn{
-  from{transform:scale(.5);opacity:0}
-  to{transform:scale(1);opacity:1}
-}
-.modal-content h3{
-  position:relative;
-  font-family:"Space Grotesk",sans-serif;font-size:23px;font-weight:600;
-  letter-spacing:-.025em;margin-bottom:10px;
-  background:linear-gradient(100deg,#fff,#ffb3e6);
-  -webkit-background-clip:text;background-clip:text;color:transparent;
-}
-.modal-content p{
-  position:relative;
-  color:var(--muted);font-size:14px;line-height:1.7;margin-bottom:28px;
-}
-.modal-close-btn{
-  position:relative;
-  padding:13px 34px;border:none;border-radius:999px;
-  font-weight:600;font-size:14px;color:#fff;cursor:pointer;
-  background:linear-gradient(110deg,#e0299f,#7c3aed);
-  box-shadow:0 12px 30px -12px var(--glow-pink);
-  transition:transform .3s var(--ease),filter .3s;
-}
-.modal-close-btn:hover{transform:translateY(-2px);filter:brightness(1.1)}
-.modal-close-btn:active{transform:scale(.97)}
-
-.download-btn:active{transform:scale(.97)}
-.download-btn.clicked{animation:neonPulse 1.4s ease-in-out infinite alternate}
-@keyframes neonPulse{
-  0%{box-shadow:0 0 12px var(--glow-pink),0 0 26px var(--glow-violet);border-color:rgba(255,255,255,.6)}
-  100%{box-shadow:0 0 30px var(--glow-pink),0 0 62px var(--glow-violet);border-color:#ffb3e6}
-}
-
-@media(max-width:900px){
-  .links a:not(.btn){display:none}
-  .links{gap:0}
-}
-@media(max-width:520px){
-  :root{--nav-h:62px}
-  .brand{font-size:14px}
-  .brand img{width:29px;height:29px}
-  .nav .btn{padding:9px 15px;font-size:11.5px}
-  .hero{padding:52px 0 64px;gap:44px}
-  .hero > div:first-child p{font-size:15px}
-  .actions{gap:10px}
-  .btn{padding:14px 20px}
-  .actions .btn{width:100%}
-  .stat b{font-size:19px}
-  .feature{padding:26px 22px}
-  .section{padding:60px 0}
-  #to-top{right:14px;bottom:14px;width:42px;height:42px}
-  .footer{padding:32px 0 40px}
-}
-
-@media(prefers-reduced-motion:reduce){
-  *,*::before,*::after{
-    animation-duration:.001ms !important;
-    animation-iteration-count:1 !important;
-    transition-duration:.001ms !important;
-    scroll-behavior:auto !important;
+@media (max-width: 480px) {
+  .navin { height: 50px; }
+  .brand { font-size: 11px; }
+  .brand img { width: 22px; height: 22px; }
+  .nav .btn {
+    padding: 4px 8px;
+    font-size: 9.5px;
+    height: 26px;
   }
-  .reveal-up{opacity:1;transform:none}
-  #cursor-glow{display:none}
 }
+
+.download-btn { transition: all 0.3s ease; height: auto; padding: 11px 20px; font-size: 12px; }
+.download-btn:active { transform: scale(0.96); }
+.download-btn.clicked { animation: neonPulse 1.5s infinite alternate; }
+@keyframes neonPulse {
+  0% { box-shadow: 0 0 10px #f044b5, 0 0 20px #8b5cf6, inset 0 0 10px #fff; border-color: #fff; }
+  100% { box-shadow: 0 0 25px #f044b5, 0 0 50px #8b5cf6, inset 0 0 20px #ff9edb; border-color: #ff9edb; }
+}
+
+#thankyou-modal {
+  position: fixed; inset: 0; background: rgba(11, 7, 20, 0.85); backdrop-filter: blur(10px);
+  display: flex; align-items: center; justify-content: center; z-index: 999999; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; padding: 20px;
+}
+#thankyou-modal.show { opacity: 1; pointer-events: auto; }
+.modal-content {
+  background: linear-gradient(145deg, #281638, #151021); border: 1px solid #f044b550; padding: 26px 16px; border-radius: 18px; text-align: center; max-width: 360px; width: 100%; box-shadow: 0 25px 50px rgba(240, 68, 181, 0.22); transform: translateY(15px); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+#thankyou-modal.show .modal-content { transform: translateY(0); }
+.modal-content h3 { font: 600 18px "Space Grotesk", sans-serif; margin: 8px 0 4px; background: linear-gradient(100deg, #fff 0%, #ff9edb 100%); color: transparent; background-clip: text; }
+.modal-content p { color: var(--muted); font-size: 11px; margin-bottom: 16px; }
+.modal-close-btn { padding: 8px 18px; border-radius: 99px; background: linear-gradient(110deg, #d6299c, #7339d8); color: #fff; font-weight: 700; border: none; cursor: pointer; transition: .2s; font-size: 11px; }
+.modal-close-btn:hover { filter: brightness(1.15); }
+
+.copy-badge {
+  background: #f044b520; border: 1px solid #f044b560; color: #ff9cdb; padding: 2px 5px; border-radius: 5px; font-family: monospace; cursor: pointer; transition: 0.2s; position: relative; display: inline-block; word-break: break-all;
+}
+.copy-badge:hover { background: #f044b540; }
+.copy-tooltip {
+  position: absolute; bottom: 125%; left: 50%; transform: translateX(-50%) translateY(4px); background: #f044b5; color: #fff; padding: 2px 5px; border-radius: 4px; font-size: 9px; font-family: sans-serif; opacity: 0; pointer-events: none; transition: 0.2s; white-space: nowrap;
+}
+.copy-badge.copied .copy-tooltip { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* Live Health Status Bar */
+.health-status-bar {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  background: rgba(240, 68, 181, 0.08); border: 1px solid rgba(240, 68, 181, 0.25);
+  padding: 8px 16px; border-radius: 99px; font-size: 10.5px; color: #ffabeb;
+  margin-top: 16px; width: fit-content; box-shadow: 0 0 20px rgba(240, 68, 181, 0.1);
+}
+.health-dot {
+  width: 7px; height: 7px; background: #00ff88; border-radius: 50%;
+  box-shadow: 0 0 10px #00ff88; animation: pulseHealth 2s infinite ease-in-out;
+}
+@keyframes pulseHealth {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+/* Comparison Table */
+.comparison-table {
+  width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 20px;
+  background: rgba(25, 16, 38, 0.6); border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+}
+.comparison-table th, .comparison-table td {
+  padding: 12px 16px; font-size: 11.5px; text-align: left; border-bottom: 1px solid var(--line);
+}
+.comparison-table th {
+  background: rgba(240, 68, 181, 0.1); color: #fff; font-family: "Space Grotesk", sans-serif; font-weight: 600;
+}
+.comparison-table tr:last-child td { border-bottom: none; }
+.comparison-table td:nth-child(2) { color: #ff9cdb; font-weight: 600; }
+.comparison-table td:nth-child(3) { color: var(--muted); }
+
+.faq-search-box {
+  width: 100%; padding: 10px 12px; margin-bottom: 15px; background: #ffffff05; border: 1px solid var(--line); border-radius: 10px; color: var(--text); font-size: 11px; outline: none; transition: 0.3s;
+}
+.faq-search-box:focus { border-color: var(--pink); box-shadow: 0 0 10px rgba(240,68,181,0.2); }
+
+.faq details {
+  padding: 12px 0; border-bottom: 1px solid var(--line); transition: background 0.3s;
+}
+.faq details summary {
+  cursor: pointer; font-weight: 700; font-size: 11px; display: flex; justify-content: space-between; align-items: center; transition: color 0.3s; gap: 6px;
+}
+.faq details summary::-webkit-details-marker { display: none; }
+.faq details summary::after {
+  content: '+'; font-size: 14px; color: var(--pink); transition: transform 0.3s ease; flex-shrink: 0;
+}
+.faq details[open] summary::after {
+  transform: rotate(45deg);
+}
+.faq details p {
+  font-size: 11px; color: var(--muted); margin-top: 6px; animation: fadeInText 0.3s ease;
+}
+@keyframes fadeInText {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.code-preview {
+  background: #0d0817; border: 1px solid var(--line); border-radius: 10px; padding: 12px; font-family: monospace; font-size: 10px; color: #a599c2; overflow-x: auto; margin-top: 12px; box-shadow: inset 0 0 12px rgba(0,0,0,0.5);
+  max-width: 100%;
+}
+.code-preview .keyword { color: #f044b5; }
+.code-preview .string { color: #9cdcfe; }
+.code-preview .property { color: #4ec9b0; }
+
+.hero{min-height:auto;display:grid;grid-template-columns:1fr;align-items:center;gap:30px;padding:40px 0 50px;position:relative;z-index:3}
+@media(min-width: 900px) {
+  .hero { grid-template-columns: 1.05fr .95fr; padding: 70px 0 85px; gap: 45px; }
+}
+
+.tag{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border:1px solid #f044b54a;border-radius:99px;background:#f044b511;color:#ffabe3;text-transform:uppercase;letter-spacing:.07em;font-size:8.5px;font-weight:700;animation: pulseGlow 3s infinite ease-in-out}
+@keyframes pulseGlow { 0%, 100% { border-color: rgba(240,68,181,0.3); } 50% { border-color: rgba(240,68,181,0.8); box-shadow: 0 0 12px rgba(240,68,181,0.2); } }
+.tag i{width:4.5px;height:4.5px;background:#ff69c7;border-radius:50%;box-shadow:0 0 6px #ff69c7;flex-shrink:0}
+
+.hero h1{font:600 clamp(28px, 6vw, 64px)/1.04 "Space Grotesk",sans-serif;letter-spacing:-.04em;margin:14px 0;word-break:break-word}
+.grad{background:linear-gradient(100deg,#fff 0%,#ff9edb 45%,#b5a0ff 100%);color:transparent;background-clip:text}
+.hero p{max-width:540px;color:var(--muted);font-size:13px;line-height:1.65}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+.note{color:#9387a6;font-size:10px;margin-top:10px}
+
+.demo{position:relative;padding:12px;border:1px solid #f7b3ed40;border-radius:16px;background:linear-gradient(145deg,#281638ed,#110b1ded);box-shadow:0 20px 50px #0008,0 0 35px #d6299c10;width:100%;max-width:460px;margin:0 auto;transform:none}
+@media(min-width: 900px) {
+  .demo { transform:perspective(1000px) rotateY(-4deg) rotateX(2deg); transition:transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .demo:hover { transform:perspective(1000px) rotateY(0deg) rotateX(0deg) scale(1.01); border-color:#f044b5; }
+}
+
+.demohead{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:10px;font-weight:700;font-size:10px;gap:6px}
+.badge{color:#ffb5e4;border:1px solid #f044b54a;background:#f044b512;border-radius:99px;padding:2px 6px;font-size:8.5px;white-space:nowrap}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:12px 0}
+.stat{padding:8px;border:1px solid var(--line);border-radius:9px;background:#ffffff06;transition:.3s;text-align:center}
+.stat:hover{background:#ffffff10;border-color:#f044b550}
+.stat b{display:block;font:600 16px "Space Grotesk"}
+.stat span{font-size:8.5px;color:var(--muted)}
+
+.label{color:#a99bbd;text-transform:uppercase;letter-spacing:.07em;font-size:8.5px;margin:12px 0 5px}
+.item{display:flex;align-items:center;gap:7px;padding:8px;margin-top:4px;border:1px solid var(--line);border-radius:9px;background:#ffffff05;transition:.3s}
+.item:hover{background:#ffffff0c;border-color:#f044b550}
+.appicon{width:26px;height:26px;border-radius:6px;display:grid;place-items:center;background:#8b5cf629;color:#f6b2e2;font-weight:700;flex-shrink:0;font-size:11px}
+.itemtext{flex:1;min-width:0}
+.itemtext b{display:block;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.itemtext span{font-size:8.5px;color:var(--muted)}
+
+.float{position:absolute;padding:8px 10px;background:#181024e8;border:1px solid var(--line);border-radius:9px;box-shadow:0 6px 20px #0005;font-size:9.5px;backdrop-filter:blur(10px);display:none}
+@media(min-width: 768px) {
+  .float { display: block; }
+}
+.float strong{display:block}
+.float.one{top:-16px;right:-7px}
+.float.two{bottom:-14px;left:-7px}
+
+.section{padding:50px 0;position:relative;z-index:3}
+.head{max-width:650px;margin-bottom:22px}
+.kicker{font-size:8.5px;text-transform:uppercase;letter-spacing:.12em;color:#ff8dd5;font-weight:700}
+.section h2{font:600 clamp(24px, 4vw, 40px)/1.1 "Space Grotesk",sans-serif;letter-spacing:-.04em;margin:6px 0}
+.head p,.muted{color:var(--muted)}
+
+.features{display:grid;grid-template-columns:1fr;gap:9px}
+@media(min-width: 600px) {
+  .features { grid-template-columns: repeat(2, 1fr); }
+}
+@media(min-width: 900px) {
+  .features { grid-template-columns: repeat(6, 1fr); }
+  .feature { grid-column: span 2; }
+  .feature:nth-child(4), .feature:nth-child(5) { grid-column: span 3; }
+}
+.feature{padding:18px;border:1px solid var(--line);border-radius:12px;background:linear-gradient(145deg,#ffffff09,#8b5cf60a);transition:.3s cubic-bezier(0.16, 1, 0.3, 1);position:relative;overflow:hidden}
+.feature:hover{transform:translateY(-3px) scale(1.01);border-color:#f044b5;box-shadow:0 12px 30px rgba(240,68,181,0.15)}
+.ico{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;background:#f044b518;border:1px solid #f044b52b;color:#ff9cdb;font-size:15px;margin-bottom:12px}
+.feature h3,.step h3{font:600 15px "Space Grotesk";margin:0 0 4px}
+.feature p,.step p{font-size:11.5px;color:var(--muted);margin:0;line-height:1.6}
+
+.how{background:linear-gradient(180deg,transparent,#21103380,transparent);border-block:1px solid #ffffff0a}
+.steps{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width: 768px) {
+  .steps { grid-template-columns: repeat(3, 1fr); }
+}
+.step{padding:18px;border-top:1px solid #f044b57a;background:linear-gradient(180deg,#f044b50c,transparent);border-radius:0 0 10px 10px;transition:.3s}
+.step:hover{background:linear-gradient(180deg,#f044b518,transparent);transform:translateY(-2px)}
+.num{font:600 9.5px "Space Grotesk";color:#ff8dd5;letter-spacing:.09em;margin-bottom:12px}
+
+.privacy{display:grid;grid-template-columns:1fr;gap:20px;align-items:center;padding:clamp(16px, 3vw, 30px);border:1px solid #f044b535;border-radius:16px;background:radial-gradient(ellipse at 0 0,#f044b515,transparent 60%),#ffffff04}
+@media(min-width: 900px) {
+  .privacy { grid-template-columns: .85fr 1.15fr; gap: 30px; }
+}
+.privacylist{display:grid;gap:8px}
+.privacyitem{display:flex;gap:8px;padding:10px;border:1px solid var(--line);border-radius:9px;background:#ffffff05;transition:.3s}
+.privacyitem:hover{background:#ffffff0a;border-color:#f044b560}
+.check{flex:0 0 16px;width:16px;height:16px;border-radius:4.5px;background:#f044b51e;color:#ff9cdb;text-align:center;font-size:10px;line-height:16px}
+.privacyitem b{display:block;font-size:10.5px}
+.privacyitem span{font-size:9.5px;color:var(--muted)}
+
+.install{display:grid;grid-template-columns:1fr;gap:18px}
+@media(min-width: 900px) {
+  .install { grid-template-columns: .8fr 1.2fr; gap: 22px; }
+}
+.panel{padding:16px;border:1px solid var(--line);border-radius:12px;background:#ffffff05;transition:.3s}
+.panel:hover{border-color:#ffffff30}
+.installstep{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #ffffff10}
+.installstep:last-child{border:0}
+.installstep em{font-style:normal;width:22px;height:22px;flex:0 0 22px;display:grid;place-items:center;border-radius:6px;background:#f044b520;color:#ff9cdb;font-weight:700;font-size:10px}
+.installstep b{font-size:10.5px;display:block}
+.installstep span{font-size:9.5px;color:var(--muted)}
+
+.faq{max-width:760px;margin:auto}
+
+.cta{text-align:center;padding:40px 16px;border:1px solid #f044b540;border-radius:18px;background:radial-gradient(ellipse at 50% 0,#d6299c27,transparent 60%),#ffffff04;position:relative;overflow:hidden}
+.cta h2{max-width:650px;margin:8px auto;font:600 clamp(24px, 4vw, 42px)/1.08 "Space Grotesk";letter-spacing:-.04em}
+.cta p{max-width:480px;margin:0 auto 16px;color:var(--muted);font-size:11.5px}
+
+.footer{display:flex;flex-direction:column;gap:10px;align-items:center;text-align:center;padding:20px 0;margin-top:30px;border-top:1px solid var(--line);font-size:10.5px;color:#a194b2}
+@media(min-width: 600px) {
+  .footer { flex-direction: row; justify-content: space-between; text-align: left; }
+}
+
+@media(max-width:768px){.links a:not(.btn){display:none}}
 </style>
 </head>
 <body>
 
 <div id="page-transition-overlay"></div>
-<div id="scroll-progress"></div>
+<canvas id="particles-canvas"></canvas>
 
-<div class="aurora" aria-hidden="true">
-  <span class="a1"></span>
-  <span class="a2"></span>
-  <span class="a3"></span>
-</div>
-<div class="grid-overlay" aria-hidden="true"></div>
-<canvas id="particles-canvas" aria-hidden="true"></canvas>
-<div class="grain" aria-hidden="true"></div>
-<div id="cursor-glow" aria-hidden="true"></div>
-
-<!-- ============ MODAL ============ -->
-<div id="thankyou-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+<div id="thankyou-modal">
   <div class="modal-content">
-    <div class="modal-icon">✓</div>
-    <h3 id="modal-title">Thank You</h3>
+    <h3>Thank You</h3>
     <p>Your extension download has started successfully. Enjoy using Extoza Link Detector.</p>
     <button class="modal-close-btn" onclick="closeModal()">Dismiss</button>
   </div>
 </div>
 
-<!-- ============ NAV ============ -->
-<header class="nav" id="site-nav">
-  <div class="wrap navin">
-    <a class="brand anim-link" href="#top">
-      <img src="https://raw.githubusercontent.com/mbabar07/gmail-app-link-detector/main/assets/logo.png" alt="Extoza logo">
-      <span>Extoza <span class="accent">Detector</span></span>
-    </a>
-    <nav class="links" aria-label="Main navigation">
-      <a href="#about" class="anim-link">About</a>
-      <a href="#features" class="anim-link">Features</a>
-      <a href="#privacy" class="anim-link">Privacy</a>
-      <a href="#install" class="anim-link">Install</a>
-      <a class="btn anim-link" href="#download">Get extension ↗</a>
-    </nav>
-  </div>
-</header>
+<div id="cursor-glow"></div>
+
+<header class="nav"><div class="wrap navin">
+<a class="brand anim-link" href="#top"><img src="https://raw.githubusercontent.com/mbabar07/gmail-app-link-detector/main/assets/logo.png" alt="Logo"><span>Extoza <span>Detector</span></span></a>
+<nav class="links" aria-label="Main navigation"><a href="#about" class="anim-link">About</a><a href="#features" class="anim-link">Features</a><a href="#privacy" class="anim-link">Privacy</a><a href="#install" class="anim-link">Install</a><a class="btn anim-link" href="#download">Get extension ↗</a></nav>
+</div></header>
 
 <main id="top">
-
-<!-- ============ HERO ============ -->
 <section class="wrap hero">
-  <div class="reveal-up">
-    <div class="tag"><i></i> v1.0.0 Stable · Secure Release</div>
-    <h1>Your inbox.<br><span class="grad">Your connections.</span><br>In control.</h1>
-    <p>Review connected apps and associated links in a focused workspace designed to make your Gmail-related connections easier to understand and manage securely.</p>
-
-    <div class="actions">
-      <a class="btn download-btn anim-link" href="https://raw.githubusercontent.com/mbabar07/gmail-app-link-detector/main/downloads/gmail_app_detector/Gmail-App-Link-Detector-1.0.0-upload.zip" download>Download extension ZIP ↓</a>
-      <a class="btn ghost anim-link" href="#about">Learn more ↘</a>
-    </div>
-
-    <div class="health-status-bar">
-      <span class="health-dot"></span>
-      <span>System Health: Local Workspace Secure &amp; Active</span>
-    </div>
-
-    <div class="note">Chrome desktop · Simple setup · Secure local review</div>
-  </div>
-
-  <div class="demo-wrap reveal-up">
-    <div class="demo" aria-label="Illustrative extension interface">
-      <div class="demohead">
-        <span>Connection overview</span>
-        <span class="badge">UI PREVIEW</span>
-      </div>
-
-      <div class="label">Workspace snapshot</div>
-      <div class="stats">
-        <div class="stat"><b>01</b><span>Account view</span></div>
-        <div class="stat"><b>04</b><span>Categories</span></div>
-        <div class="stat"><b>↗</b><span>Link review</span></div>
-      </div>
-
-      <div class="label">Illustrative detected areas</div>
-      <div class="item">
-        <div class="appicon">G</div>
-        <div class="itemtext"><b>Google account</b><span>Account overview</span></div>
-        <span class="badge">Review</span>
-      </div>
-      <div class="item">
-        <div class="appicon">◈</div>
-        <div class="itemtext"><b>Connected applications</b><span>Organized in one place</span></div>
-        <span class="badge">Apps</span>
-      </div>
-      <div class="item">
-        <div class="appicon">↗</div>
-        <div class="itemtext"><b>Associated links</b><span>Review before you act</span></div>
-        <span class="badge">Links</span>
-      </div>
-
-      <div class="note" style="margin-top:18px">Illustration only — not live account data.</div>
-    </div>
-
-    <div class="float one"><strong>Focused by design</strong>Less clutter, more clarity.</div>
-    <div class="float two"><strong>One clear workspace</strong>Review at your own pace.</div>
-  </div>
+<div class="reveal-up"><div class="tag"><i></i> v1.0.0 Stable Build · Secure Release</div>
+<h1>Your inbox.<br><span class="grad">Your connections.</span><br>In control.</h1>
+<p>Review connected apps and associated links in a focused workspace designed to make your Gmail-related connections easier to understand and manage securely.</p>
+<div class="actions"><a class="btn download-btn anim-link" href="https://raw.githubusercontent.com/mbabar07/gmail-app-link-detector/main/downloads/gmail_app_detector/Gmail-App-Link-Detector-1.0.0-upload.zip" download id="download-trigger">Download extension ZIP ↓</a><a class="btn ghost anim-link" href="#about">Learn more ↘</a></div>
+<div class="health-status-bar"><div class="health-dot"></div><span>System Health: Local Workspace Secure & Active</span></div>
+<div class="note">Chrome desktop · Simple setup · Secure local review</div></div>
+<div class="demo reveal-up" aria-label="Illustrative extension interface">
+<div class="demohead"><span>Connection overview</span><span class="badge">UI PREVIEW</span></div>
+<div class="label">Workspace snapshot</div><div class="stats"><div class="stat"><b>01</b><span>Account view</span></div><div class="stat"><b>04</b><span>Categories</span></div><div class="stat"><b>↗</b><span>Link review</span></div></div>
+<div class="label">Illustrative detected areas</div>
+<div class="item"><div class="appicon">G</div><div class="itemtext"><b>Google account</b><span>Account overview</span></div><span class="badge">Review</span></div>
+<div class="item"><div class="appicon">◈</div><div class="itemtext"><b>Connected applications</b><span>Organized in one place</span></div><span class="badge">Apps</span></div>
+<div class="item"><div class="appicon">↗</div><div class="itemtext"><b>Associated links</b><span>Review before you act</span></div><span class="badge">Links</span></div>
+<div class="note">Illustration only — not live account data.</div>
+<div class="float one"><b>Focused by design</b>Less clutter, more clarity.</div><div class="float two"><b>One clear workspace</b>Review at your own pace.</div>
+</div>
 </section>
 
-<!-- ============ ABOUT ============ -->
 <section class="wrap section" id="about">
-  <div class="head reveal-up">
-    <div class="kicker">Extension Overview</div>
-    <h2>What is Extoza Gmail App &amp; Link Detector?</h2>
-    <p>Extoza Gmail App &amp; Link Detector is a specialized Chrome extension built to give users complete visibility over third-party applications, services, and associated external links linked or referenced through their Gmail ecosystem.</p>
-  </div>
-
-  <div class="features">
-    <article class="feature reveal-up">
-      <div class="ico">⌕</div>
-      <h3>App Discovery</h3>
-      <p>Scans and lists active application connections associated with your inbox sessions in an organized manner.</p>
-    </article>
-    <article class="feature reveal-up">
-      <div class="ico">↗</div>
-      <h3>Link Audit</h3>
-      <p>Isolates external links and redirection endpoints found in connected notifications, allowing careful examination before clicking.</p>
-    </article>
-    <article class="feature reveal-up">
-      <div class="ico">🛡</div>
-      <h3>Security Control</h3>
-      <p>Empowers you to identify unrecognized permissions or outdated application integrations and revoke access directly.</p>
-    </article>
-  </div>
+<div class="head reveal-up">
+<div class="kicker">Extension Overview</div>
+<h2>What is Extoza Gmail App & Link Detector?</h2>
+<p>Extoza Gmail App & Link Detector is a specialized Chrome extension built to give users complete visibility over third-party applications, services, and associated external links linked or referenced through their Gmail ecosystem.</p>
+</div>
+<div class="features">
+<article class="feature reveal-up"><div class="ico">⌕</div><h3>App Discovery</h3><p>Scans and lists active application connections associated with your inbox sessions in an organized manner.</p></article>
+<article class="feature reveal-up"><div class="ico">↗</div><h3>Link Audit</h3><p>Isolates external links and redirection endpoints found in connected notifications, allowing careful examination before clicking.</p></article>
+<article class="feature reveal-up"><div class="ico">🛡</div><h3>Security Control</h3><p>Empowers you to identify unrecognized permissions or outdated application integrations and revoke access directly.</p></article>
+</div>
 </section>
 
-<!-- ============ FEATURES ============ -->
-<section class="wrap section" id="features">
-  <div class="head reveal-up">
-    <div class="kicker">Core Capabilities</div>
-    <h2>Everything you need.<br><span class="grad">Nothing you don't.</span></h2>
-    <p>A cleaner product experience for reviewing detected items and choosing your next step carefully.</p>
-  </div>
+<section class="wrap section" id="features"><div class="head reveal-up"><div class="kicker">Core Capabilities</div><h2>Everything you need.<br><span class="grad">Nothing you don't.</span></h2><p>A cleaner product experience for reviewing detected items and choosing your next step carefully.</p></div>
+<div class="features">
+<article class="feature reveal-up"><div class="ico">⌕</div><h3>Account overview</h3><p>Keep your account context clear, with a sensible state when an account is not connected.</p></article>
+<article class="feature reveal-up"><div class="ico">◈</div><h3>Connected apps</h3><p>Review discovered app connections in an organized workspace, with clear selection controls.</p></article>
+<article class="feature reveal-up"><div class="ico">↗</div><h3>Link visibility</h3><p>Bring associated links into view so you can review detected items before taking action.</p></article>
+<article class="feature reveal-up"><div class="ico">▤</div><h3>Category views</h3><p>Keep categories distinct for a more deliberate review process and less visual clutter.</p></article>
+<article class="feature reveal-up"><div class="ico">✓</div><h3>Careful actions</h3><p>Understand what is selected and confirm destructive actions before proceeding.</p></article>
+</div></section>
 
-  <div class="features">
-    <article class="feature reveal-up">
-      <div class="ico">⌕</div>
-      <h3>Account overview</h3>
-      <p>Keep your account context clear, with a sensible state when an account is not connected.</p>
-    </article>
-    <article class="feature reveal-up">
-      <div class="ico">◈</div>
-      <h3>Connected apps</h3>
-      <p>Review discovered app connections in an organized workspace, with clear selection controls.</p>
-    </article>
-    <article class="feature reveal-up">
-      <div class="ico">↗</div>
-      <h3>Link visibility</h3>
-      <p>Bring associated links into view so you can review detected items before taking action.</p>
-    </article>
-    <article class="feature reveal-up">
-      <div class="ico">▤</div>
-      <h3>Category views</h3>
-      <p>Keep categories distinct for a more deliberate review process and less visual clutter.</p>
-    </article>
-    <article class="feature reveal-up">
-      <div class="ico">✓</div>
-      <h3>Careful actions</h3>
-      <p>Understand what is selected and confirm destructive actions before proceeding.</p>
-    </article>
-  </div>
-</section>
-
-<!-- ============ COMPARISON ============ -->
 <section class="wrap section" id="comparison">
-  <div class="head reveal-up">
-    <div class="kicker">Why Extoza</div>
-    <h2>How we compare to <span class="grad">standard tools.</span></h2>
-    <p>See why users prefer a secure, localized workspace for tracking inbox app connections.</p>
-  </div>
-
-  <div class="table-shell reveal-up">
-    <div class="table-scroll">
-      <table class="comparison-table">
-        <thead>
-          <tr>
-            <th>Feature Capability</th>
-            <th>Extoza Detector</th>
-            <th>Standard Browser Tool</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Data Privacy</td>
-            <td>100% Local Processing (Zero server logs)</td>
-            <td>Cloud-tracked metadata</td>
-          </tr>
-          <tr>
-            <td>Interface &amp; Workspace</td>
-            <td>Clean Side Panel integration</td>
-            <td>Cluttered settings menus</td>
-          </tr>
-          <tr>
-            <td>Link Redirection Audit</td>
-            <td>Advanced endpoint isolation</td>
-            <td>Basic direct inspection</td>
-          </tr>
-          <tr>
-            <td>Setup Speed</td>
-            <td>Instant unpacked installation</td>
-            <td>Complex account permissions</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+<div class="head reveal-up">
+<div class="kicker">Why Extoza</div>
+<h2>How we compare to <span class="grad">standard tools.</span></h2>
+<p>See why users prefer a secure, localized workspace for tracking inbox app connections.</p>
+</div>
+<div class="reveal-up">
+<table class="comparison-table">
+  <thead>
+    <tr>
+      <th>Feature Capability</th>
+      <th>Extoza Detector</th>
+      <th>Standard Browser Tool</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Data Privacy</td>
+      <td>100% Local Processing (Zero server logs)</td>
+      <td>Cloud-tracked metadata</td>
+    </tr>
+    <tr>
+      <td>Interface & Workspace</td>
+      <td>Clean Side Panel integration</td>
+      <td>Cluttered settings menus</td>
+    </tr>
+    <tr>
+      <td>Link Redirection Audit</td>
+      <td>Advanced endpoint isolation</td>
+      <td>Basic direct inspection</td>
+    </tr>
+    <tr>
+      <td>Setup Speed</td>
+      <td>Instant unpacked installation</td>
+      <td>Complex account permissions</td>
+    </tr>
+  </tbody>
+</table>
+</div>
 </section>
 
-<!-- ============ HOW ============ -->
-<section class="section how" id="how">
-  <div class="wrap">
-    <div class="head reveal-up">
-      <div class="kicker">Three simple steps</div>
-      <h2>From install to <span class="grad">overview.</span></h2>
-      <p>Start with the package you received from the extension publisher.</p>
-    </div>
+<section class="section how" id="how"><div class="wrap"><div class="head reveal-up"><div class="kicker">Three simple steps</div> cancellation
+<h2>From install to <span class="grad">overview.</span></h2><p>Start with the package you received from the extension publisher.</p></div>
+<div class="steps">
+<article class="step reveal-up"><div class="num">01 / INSTALL</div><h3>Add to Chrome</h3><p>Download and extract the extension ZIP, then open Chrome's extension manager.</p></article>
+<article class="step reveal-up"><div class="num">02 / CONNECT</div><h3>Open Gmail</h3><p>Sign in to the account you want to review and open the extension from Chrome's toolbar.</p></article>
+<article class="step reveal-up"><div class="num">03 / REVIEW</div><h3>Explore connections</h3><p>Review the available views and detected items, then choose actions carefully.</p></article>
+</div></div></section>
 
-    <div class="steps">
-      <article class="step reveal-up">
-        <div class="num">01 / INSTALL</div>
-        <h3>Add to Chrome</h3>
-        <p>Download and extract the extension ZIP, then open Chrome's extension manager.</p>
-      </article>
-      <article class="step reveal-up">
-        <div class="num">02 / CONNECT</div>
-        <h3>Open Gmail</h3>
-        <p>Sign in to the account you want to review and open the extension from Chrome's toolbar.</p>
-      </article>
-      <article class="step reveal-up">
-        <div class="num">03 / REVIEW</div>
-        <h3>Explore connections</h3>
-        <p>Review the available views and detected items, then choose actions carefully.</p>
-      </article>
-    </div>
-  </div>
-</section>
-
-<!-- ============ MANIFEST ============ -->
 <section class="wrap section" id="manifest-preview">
-  <div class="head reveal-up">
-    <div class="kicker">Developer Transparency</div>
-    <h2>Manifest V3 Architecture</h2>
-    <p>Extoza is built strictly according to modern Chrome extension standards, ensuring high performance, low memory usage, and maximum security.</p>
-  </div>
-
-  <div class="reveal-up">
-    <div class="code-preview">
-{<br>
-&nbsp;&nbsp;<span class="property">"manifest_version"</span><span class="pun">:</span> <span class="string">3</span>,<br>
-&nbsp;&nbsp;<span class="property">"name"</span><span class="pun">:</span> <span class="string">"Extoza Gmail App &amp; Link Detector"</span>,<br>
-&nbsp;&nbsp;<span class="property">"version"</span><span class="pun">:</span> <span class="string">"1.0.0"</span>,<br>
-&nbsp;&nbsp;<span class="property">"permissions"</span><span class="pun">:</span> [<span class="string">"sidePanel"</span>, <span class="string">"activeTab"</span>, <span class="string">"storage"</span>],<br>
-&nbsp;&nbsp;<span class="property">"action"</span><span class="pun">:</span> {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="property">"default_side_panel"</span><span class="pun">:</span> <span class="string">"sidepanel.html"</span><br>
-&nbsp;&nbsp;}<br>
-}
-    </div>
-  </div>
+<div class="head reveal-up">
+<div class="kicker">Developer Transparency</div>
+<h2>Manifest V3 Architecture</h2>
+<p>Extoza is built strictly according to modern Chrome extension standards, ensuring high performance, low memory usage, and maximum security.</p>
+</div>
+<div class="reveal-up">
+<div class="code-preview">
+  {<br>
+  &nbsp;&nbsp;<span class="property">"manifest_version"</span>: <span class="string">3</span>,<br>
+  &nbsp;&nbsp;<span class="property">"name"</span>: <span class="string">"Extoza Gmail App & Link Detector"</span>,<br>
+  &nbsp;&nbsp;<span class="property">"version"</span>: <span class="string">"1.0.0"</span>,<br>
+  &nbsp;&nbsp;<span class="property">"permissions"</span>: [<span class="string">"sidePanel"</span>, <span class="string">"activeTab"</span>, <span class="string">"storage"</span>],<br>
+  &nbsp;&nbsp;<span class="property">"action"</span>: {<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;<span class="property">"default_side_panel"</span>: <span class="string">"sidepanel.html"</span><br>
+  &nbsp;&nbsp;}<br>
+  }
+</div>
+</div>
 </section>
 
-<!-- ============ PRIVACY ============ -->
 <section class="wrap section" id="privacy">
-  <div class="privacy reveal-up">
-    <div>
-      <div class="kicker">Privacy &amp; Security Commitment</div>
-      <h2>Strictly secure.<br>Complete data transparency.</h2>
-      <p class="muted">We believe your inbox data belongs strictly to you. Extoza operates with a privacy-first architecture:</p>
-      <ul>
-        <li><b>Local Processing:</b> All connection scans and link analysis occur locally within your browser workspace. No sensitive email content or credentials are ever transmitted to external servers.</li>
-        <li><b>No Data Logging:</b> We do not store, log, or monetize your inbox metadata, personal identifiers, or browsing activity.</li>
-        <li><b>Permission Transparency:</b> The extension requests only the minimum necessary Chrome permissions required to inspect active tab links and side panel rendering.</li>
-      </ul>
-    </div>
-
-    <div class="privacylist">
-      <div class="privacyitem">
-        <div class="check">✓</div>
-        <div><b>Review permissions</b><span>Check Chrome's permission prompt and make sure permissions match the features you expect.</span></div>
-      </div>
-      <div class="privacyitem">
-        <div class="check">✓</div>
-        <div><b>Understand data handling</b><span>Read our strict privacy policy before granting access to your workspace.</span></div>
-      </div>
-      <div class="privacyitem">
-        <div class="check">✓</div>
-        <div><b>Confirm important actions</b><span>Review detected items and confirm deletion or disconnection actions carefully.</span></div>
-      </div>
-    </div>
-  </div>
+<div class="privacy reveal-up">
+<div>
+<div class="kicker">Privacy & Security Commitment</div>
+<h2>Strictly secure. Complete data transparency.</h2>
+<p class="muted" style="margin-top: 15px;">We believe your inbox data belongs strictly to you. Extoza operates with a privacy-first architecture:</p>
+<ul style="color: var(--muted); font-size: 12.5px; padding-left: 18px; line-height: 1.75; margin-top: 12px;">
+<li><b>Local Processing:</b> All connection scans and link analysis occur locally within your browser workspace. No sensitive email content or credentials are ever transmitted to external servers.</li>
+<li><b>No Data Logging:</b> We do not store, log, or monetize your inbox metadata, personal identifiers, or browsing activity.</li>
+<li><b>Permission Transparency:</b> The extension requests only the minimum necessary Chrome permissions required to inspect active tab links and side panel rendering.</li>
+</ul>
+</div>
+<div class="privacylist">
+<div class="privacyitem"><div class="check">✓</div><div><b>Review permissions</b><span>Check Chrome's permission prompt and make sure permissions match the features you expect.</span></div></div>
+<div class="privacyitem"><div class="check">✓</div><div><b>Understand data handling</b><span>Read our strict privacy policy before granting access to your workspace.</span></div></div>
+<div class="privacyitem"><div class="check">✓</div><div><b>Confirm important actions</b><span>Review detected items and confirm deletion or disconnection actions carefully.</span></div></div>
+</div>
+</div>
 </section>
 
-<!-- ============ INSTALL ============ -->
-<section class="wrap section" id="install">
-  <div class="head reveal-up">
-    <div class="kicker">Quick start</div>
-    <h2>Up and running<br><span class="grad">in a few steps.</span></h2>
-    <p>For developer-supplied unpacked extensions, Chrome's developer mode may be required.</p>
-  </div>
+<section class="wrap section" id="install"><div class="head reveal-up"><div class="kicker">Quick start</div><h2>Up and running<br><span class="grad">in a few steps.</span></h2><p>For developer-supplied unpacked extensions, Chrome's developer mode may be required.</p></div>
+<div class="install">
+<div class="panel reveal-up"><h3>Chrome desktop</h3><p class="muted">This site is for the Chrome extension package. Browser compatibility and feature availability depend on the actual extension build.</p><p class="note">Only install files from a source you trust.</p></div>
+<div class="panel reveal-up">
+<div class="installstep"><em>1</em><div><b>Download the extension ZIP</b><span>Use the download button below after the package has been added to this website.</span></div></div>
+<div class="installstep"><em>2</em><div><b>Extract the ZIP file</b><span>Unzip it into a folder on your computer.</span></div></div>
+<div class="installstep"><em>3</em><div><b>Open extension manager</b><span>Navigate to <span class="copy-badge" onclick="copyToClipboard(this, 'chrome://extensions')">chrome://extensions<span class="copy-tooltip">Copied</span></span> in your browser.</span></div></div>
+<div class="installstep"><em>4</em><div><b>Load unpacked</b><span>Select the extracted folder containing manifest.json, then pin the extension if you like.</span></div></div>
+</div></div></section>
 
-  <div class="install">
-    <div class="panel reveal-up">
-      <h3>Chrome desktop</h3>
-      <p class="muted">This site is for the Chrome extension package. Browser compatibility and feature availability depend on the actual extension build.</p>
-      <p class="note">Only install files from a source you trust.</p>
-    </div>
-
-    <div class="panel reveal-up">
-      <div class="installstep">
-        <em>1</em>
-        <div><b>Download the extension ZIP</b><span>Use the download button below after the package has been added to this website.</span></div>
-      </div>
-      <div class="installstep">
-        <em>2</em>
-        <div><b>Extract the ZIP file</b><span>Unzip it into a folder on your computer.</span></div>
-      </div>
-      <div class="installstep">
-        <em>3</em>
-        <div><b>Open extension manager</b><span>Navigate to <span class="copy-badge" onclick="copyToClipboard(this,'chrome://extensions')">chrome://extensions<span class="copy-tooltip">Copied</span></span> in your browser.</span></div>
-      </div>
-      <div class="installstep">
-        <em>4</em>
-        <div><b>Load unpacked</b><span>Select the extracted folder containing manifest.json, then pin the extension if you like.</span></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ FAQ ============ -->
 <section class="wrap section" id="faq">
-  <div class="head reveal-up" style="margin-inline:auto;text-align:center">
-    <div class="kicker">Good to know</div>
-    <h2>Frequently asked <span class="grad">questions.</span></h2>
-  </div>
-
-  <div class="faq-wrap">
-    <input type="text" id="faq-search" class="faq-search-box reveal-up" placeholder="Search questions..." onkeyup="filterFAQ()" aria-label="Search FAQ">
-
-    <div class="faq" id="faq-list">
-      <details class="reveal-up">
-        <summary>What does the extension actually do?</summary>
-        <p>It acts as a secure side panel workspace in Chrome to help you inspect third-party app connections and associated links found within your Gmail environment.</p>
-      </details>
-      <details class="reveal-up">
-        <summary>Is my email password or data shared?</summary>
-        <p>No. Extoza processes everything locally on your device. We do not have access to your passwords, emails, or personal data.</p>
-      </details>
-      <details class="reveal-up">
-        <summary>How do I install the extension package?</summary>
-        <p>Download the ZIP file from this site, extract it, enable Developer Mode in chrome://extensions, and click "Load unpacked" to select the folder.</p>
-      </details>
-    </div>
-  </div>
+<div class="head reveal-up">
+<div class="kicker">Good to know</div>
+<h2>Frequently asked <span class="grad">questions.</span></h2>
+</div>
+<input type="text" id="faq-search" class="faq-search-box reveal-up" placeholder="Search questions..." onkeyup="filterFAQ()">
+<div class="faq" id="faq-list">
+<details class="reveal-up"><summary>What does the extension actually do?</summary><p>It acts as a secure side panel workspace in Chrome to help you inspect third-party app connections and associated links found within your Gmail environment.</p></details>
+<details class="reveal-up"><summary>Is my email password or data shared?</summary><p>No. Extoza processes everything locally on your device. We do not have access to your passwords, emails, or personal data.</p></details>
+<details class="reveal-up"><summary>How do I install the extension package?</summary><p>Download the ZIP file from this site, extract it, enable Developer Mode in chrome://extensions, and click "Load unpacked" to select the folder.</p></details>
+</div>
 </section>
 
-<!-- ============ CTA ============ -->
-<section class="wrap reveal-up" id="download" style="padding-bottom:40px">
-  <div class="cta">
-    <div class="kicker">Ready when you are</div>
-    <h2>A more considered way to review <span class="grad">your connections.</span></h2>
-    <p>Download the Chrome extension package from this site. Only install it after checking the package and its permissions.</p>
-    <a class="btn download-btn" href="https://raw.githubusercontent.com/mbabar07/gmail-app-link-detector/main/downloads/gmail_app_detector/Gmail-App-Link-Detector-1.0.0-upload.zip" download>Download extension ZIP ↓</a>
-    <div class="note">File is served securely from our GitHub repository.</div>
-  </div>
-</section>
-
+<section class="wrap reveal-up" id="download"><div class="cta"><div class="kicker">Ready when you are</div><h2>A more considered way to review <span class="grad">your connections.</span></h2><p>Download the Chrome extension package from this site. Only install it after checking the package and its permissions.</p><a class="btn download-btn" href="https://raw.githubusercontent.com/mbabar07/gmail-app-link-detector/main/downloads/gmail_app_detector/Gmail-App-Link-Detector-1.0.0-upload.zip" download id="download-trigger">Download extension ZIP ↓</a><div class="note">Make sure the ZIP file is uploaded directly to the root of your repository.</div></div></section>
 </main>
 
-<!-- ============ FOOTER ============ -->
-<footer class="wrap footer">
-  <a class="brand anim-link" href="#top">
-    <img src="https://raw.githubusercontent.com/mbabar07/gmail-app-link-detector/main/assets/logo.png" alt="Extoza logo">
-    <span>Extoza <span class="accent">Detector</span></span>
-  </a>
-  <span>Built for clarity · Chrome desktop</span>
-  <a href="#privacy" class="anim-link">Privacy &amp; permissions ↑</a>
-</footer>
-
-<button id="to-top" aria-label="Back to top">↑</button>
+<footer class="wrap footer"><a class="brand anim-link" href="#top"><img src="https://raw.githubusercontent.com/mbabar07/gmail-app-link-detector/main/assets/logo.png" alt="Logo"><span>Extoza <span>Detector</span></span></a><span>Built for clarity · Chrome desktop</span><a href="#privacy" class="anim-link">Privacy &amp; permissions ↑</a></footer>
 
 <script>
-/* ============================================================
-   PAGE LOAD
-============================================================ */
 window.addEventListener('DOMContentLoaded', () => {
-  requestAnimationFrame(() => {
-    setTimeout(() => document.body.classList.add('loaded'), 60);
-  });
+  setTimeout(() => {
+    document.body.classList.add('loaded');
+  }, 50);
 });
 
-/* ============================================================
-   SCROLL PROGRESS + NAV STATE + BACK TO TOP
-============================================================ */
-const navEl = document.getElementById('site-nav');
-const progressEl = document.getElementById('scroll-progress');
-const toTopBtn = document.getElementById('to-top');
-
-let ticking = false;
-function onScroll(){
-  const y = window.scrollY;
-  const h = document.documentElement.scrollHeight - window.innerHeight;
-  progressEl.style.width = (h > 0 ? (y / h) * 100 : 0) + '%';
-  navEl.classList.toggle('scrolled', y > 12);
-  toTopBtn.classList.toggle('show', y > 700);
-  ticking = false;
-}
-window.addEventListener('scroll', () => {
-  if(!ticking){ requestAnimationFrame(onScroll); ticking = true; }
-}, {passive:true});
-onScroll();
-
-toTopBtn.addEventListener('click', () => {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-});
-
-/* ============================================================
-   PARTICLES
-============================================================ */
 const canvas = document.getElementById('particles-canvas');
 const ctx = canvas.getContext('2d');
 let particlesArray = [];
-let dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-function resizeCanvas(){
-  canvas.width = window.innerWidth * dpr;
-  canvas.height = window.innerHeight * dpr;
-  canvas.style.width = window.innerWidth + 'px';
-  canvas.style.height = window.innerHeight + 'px';
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
 }
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
-class Particle{
-  constructor(){
-    this.reset(true);
+class Particle {
+  constructor() {
+    this.x = Math.random() * canvas.width;
+    this.y = Math.random() * canvas.height;
+    this.size = Math.random() * 2 + 0.5;
+    this.speedX = (Math.random() - 0.5) * 0.3;
+    this.speedY = (Math.random() - 0.5) * 0.3;
+    this.opacity = Math.random() * 0.5 + 0.2;
   }
-  reset(initial){
-    this.x = Math.random() * window.innerWidth;
-    this.y = initial ? Math.random() * window.innerHeight : window.innerHeight + 10;
-    this.size = Math.random() * 1.8 + 0.4;
-    this.speedX = (Math.random() - 0.5) * 0.22;
-    this.speedY = -(Math.random() * 0.32 + 0.06);
-    this.opacity = Math.random() * 0.45 + 0.12;
-    this.hue = Math.random() > 0.55 ? '255,79,195' : '139,92,246';
-  }
-  update(){
+  update() {
     this.x += this.speedX;
     this.y += this.speedY;
-    if(this.y < -12 || this.x < -12 || this.x > window.innerWidth + 12){
-      this.reset(false);
-    }
+    if (this.x < 0) this.x = canvas.width;
+    if (this.x > canvas.width) this.x = 0;
+    if (this.y < 0) this.y = canvas.height;
+    if (this.y > canvas.height) this.y = 0;
   }
-  draw(){
-    ctx.fillStyle = `rgba(${this.hue},${this.opacity})`;
+  draw() {
+    ctx.fillStyle = `rgba(240, 68, 181, ${this.opacity})`;
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
     ctx.fill();
   }
 }
 
-function initParticles(){
-  const count = window.innerWidth < 768 ? 22 : 42;
+function initParticles() {
   particlesArray = [];
-  for(let i = 0; i < count; i++) particlesArray.push(new Particle());
+  for (let i = 0; i < 35; i++) {
+    particlesArray.push(new Particle());
+  }
 }
 initParticles();
 
-let rafId = null;
-const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-function animateParticles(){
-  ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-  for(const p of particlesArray){ p.update(); p.draw(); }
-  rafId = requestAnimationFrame(animateParticles);
-}
-if(!reduceMotion) animateParticles();
-
-document.addEventListener('visibilitychange', () => {
-  if(reduceMotion) return;
-  if(document.hidden && rafId){ cancelAnimationFrame(rafId); rafId = null; }
-  else if(!rafId && !document.hidden){ animateParticles(); }
-});
-
-/* ============================================================
-   CURSOR GLOW
-============================================================ */
-const cursorGlow = document.getElementById('cursor-glow');
-if(window.matchMedia('(hover:hover) and (min-width:861px)').matches){
-  let gx = window.innerWidth / 2, gy = window.innerHeight / 2;
-  let cx = gx, cy = gy;
-  window.addEventListener('mousemove', (e) => { gx = e.clientX; gy = e.clientY; }, {passive:true});
-  (function loopGlow(){
-    cx += (gx - cx) * 0.12;
-    cy += (gy - cy) * 0.12;
-    cursorGlow.style.transform = `translate(${cx}px, ${cy}px) translate(-50%, -50%)`;
-    requestAnimationFrame(loopGlow);
-  })();
-}
-
-/* ============================================================
-   FEATURE SPOTLIGHT
-============================================================ */
-document.querySelectorAll('.feature').forEach(card => {
-  card.addEventListener('mousemove', (e) => {
-    const r = card.getBoundingClientRect();
-    card.style.setProperty('--mx', ((e.clientX - r.left) / r.width) * 100 + '%');
-    card.style.setProperty('--my', ((e.clientY - r.top) / r.height) * 100 + '%');
+function animateParticles() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particlesArray.forEach(p => {
+    p.update();
+    p.draw();
   });
+  requestAnimationFrame(animateParticles);
+}
+animateParticles();
+
+function copyToClipboard(element, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    element.classList.add('copied');
+    setTimeout(() => {
+      element.classList.remove('copied');
+    }, 1200);
+  });
+}
+
+function filterFAQ() {
+  let input = document.getElementById('faq-search').value.toLowerCase();
+  let details = document.querySelectorAll('#faq-list details');
+  details.forEach(item => {
+    let text = item.innerText.toLowerCase();
+    if(text.includes(input)) {
+      item.style.display = 'block';
+    } else {
+      item.style.display = 'none';
+    }
+  });
+}
+
+const observerOptions = {
+  threshold: 0.05,
+  rootMargin: "0px 0px -20px 0px"
+};
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('active');
+    } else {
+      entry.target.classList.remove('active');
+    }
+  });
+}, observerOptions);
+
+document.querySelectorAll('.reveal-up').forEach(el => {
+  observer.observe(el);
 });
 
-/* ============================================================
-   COPY TO CLIPBOARD
-============================================================ */
-function copyToClipboard(element, text){
-  const done = () => {
-    element.classList.add('copied');
-    clearTimeout(element._t);
-    element._t = setTimeout(() => element.classList.remove('copied'), 1300);
-  };
-  if(navigator.clipboard && window.isSecureContext){
-    navigator.clipboard.writeText(text).then(done).catch(done);
-  } else {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.style.position = 'fixed';
-    ta.style.opacity = '0';
-    document.body.appendChild(ta);
-    ta.select();
-    try { document.execCommand('copy'); } catch(e){}
-    document.body.removeChild(ta);
-    done();
+const downloadTrigger = document.getElementById('download-trigger');
+const thankyouModal = document.getElementById('thankyou-modal');
+
+if(downloadTrigger) {
+  downloadTrigger.addEventListener('click', function(e) {
+    this.classList.add('clicked');
+    setTimeout(() => {
+      thankyouModal.classList.add('show');
+    }, 400);
+  });
+}
+
+function closeModal() {
+  thankyouModal.classList.remove('show');
+  if(downloadTrigger) {
+    downloadTrigger.classList.remove('clicked');
   }
 }
 
-/* ============================================================
-   FAQ SEARCH
-============================================================ */
-function filterFAQ(){
-  const input = document.getElementById('faq-search').value.toLowerCase().trim();
-  document.querySelectorAll('#faq-list details').forEach(item => {
-    const match = item.innerText.toLowerCase().includes(input);
-    item.style.display = match ? '' : 'none';
-  });
-}
-
-/* ============================================================
-   REVEAL OBSERVER
-============================================================ */
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if(entry.isIntersecting){
-      entry.target.classList.add('active');
-      observer.unobserve(entry.target);
-    }
-  });
-}, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
-
-document.querySelectorAll('.reveal-up').forEach(el => observer.observe(el));
-
-/* ============================================================
-   DOWNLOAD → MODAL + 404 CHECK
-============================================================ */
-const thankyouModal = document.getElementById('thankyou-modal');
-let modalTimer = null;
-
-document.querySelectorAll('.download-btn').forEach(btn => {
-  btn.addEventListener('click', function(e){
-    const url = this.getAttribute('href');
-
-    // Background HEAD check for missing file
-    fetch(url, { method: 'HEAD' })
-      .then(res => {
-        if(!res.ok){
-          console.warn('⚠️ Download file not found:', url, '— Status:', res.status);
-        } else {
-          console.log('✅ File ready:', url);
-        }
-      })
-      .catch(() => {});
-
-    this.classList.add('clicked');
-    clearTimeout(modalTimer);
-    modalTimer = setTimeout(() => thankyouModal.classList.add('show'), 420);
-  });
-});
-
-function closeModal(){
-  thankyouModal.classList.remove('show');
-  document.querySelectorAll('.download-btn').forEach(b => b.classList.remove('clicked'));
-}
-thankyouModal.addEventListener('click', (e) => {
-  if(e.target === thankyouModal) closeModal();
-});
-document.addEventListener('keydown', (e) => {
-  if(e.key === 'Escape') closeModal();
-});
-
-/* ============================================================
-   SMOOTH ANCHOR NAVIGATION
-============================================================ */
 document.querySelectorAll('a.anim-link').forEach(link => {
-  link.addEventListener('click', function(e){
+  link.addEventListener('click', function(e) {
     const href = this.getAttribute('href');
-    if(!href) return;
-
-    // Download / external file — let it pass through
-    if(this.hasAttribute('download') || /\.(zip|crx|exe|dmg)$/i.test(href)) return;
-
-    if(href.startsWith('#')){
+    if(href && href.startsWith('#')) {
       e.preventDefault();
       const target = document.querySelector(href);
-      if(target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      else if(href === '#top') window.scrollTo({ top: 0, behavior: 'smooth' });
-      return;
-    }
-
-    if(!href.startsWith('javascript')){
+      if(target) {
+        target.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else if(href && !href.startsWith('javascript')) {
       e.preventDefault();
       document.body.classList.remove('loaded');
-      setTimeout(() => { window.location.href = href; }, 620);
+      setTimeout(() => {
+        window.location.href = href;
+      }, 800);
     }
   });
+});
+
+const cursorGlow = document.getElementById('cursor-glow');
+window.addEventListener('mousemove', (e) => {
+  cursorGlow.style.left = e.clientX + 'px';
+  cursorGlow.style.top = e.clientY + 'px';
 });
 </script>
 
-</body>
-</html>
+</body></html>
